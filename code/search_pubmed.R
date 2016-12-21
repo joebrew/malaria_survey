@@ -73,6 +73,8 @@ pubmed <- function(start_year = 2016,
         # Get IDs of the articles returned in our query
         # Qids <- queryId(search_query)
         
+        message('Cleaning up records')
+        
         # Actually fetch data
         records <- EUtilsGet(search_query)
         
@@ -86,8 +88,8 @@ pubmed <- function(start_year = 2016,
                      'year' = years[year],
                      'month' = MonthPubmed(records),
                      'day' = DayPubmed(records),
-                     'affiliation' = Affiliation(records),
-                     'cited' = Cited(records))
+                     # 'cited' = Cited(records),
+                     'affiliation' = Affiliation(records))
         # Cited(records)
         # RefSource(records)
         
@@ -157,15 +159,17 @@ pubmed <- function(start_year = 2016,
   # Return
   return(return_object)
 }
+
 if('pubmed_results.RData' %in% dir('../data')){
   load('../data/pubmed_results.RData')
 } else {
   # Run on December 20, 2016, at 9:00 CAT
-  x <- pubmed(start_year = 2000,
+  x <- pubmed(start_year = 2010,
               end_year = 2016,
-              search_topic = paste0('(malaria[Title/Abstract])'),
+              search_topic = 'malaria',
+              # search_topic = paste0('(malaria[Title/Abstract])'),
               counts_only = FALSE,
-              n_records = 99999999)
+              n_records = 99999)
   save(x, 
        file = '../data/pubmed_results.RData')
 }
@@ -200,6 +204,7 @@ if('final_authors.RData' %in% dir('../data')){
   # Go through each row, expand, and join results
   results_list <- list()
   for (i in 1:nrow(results)){
+    message(i)
     these_rows <- expand_rows(df = results[i,])
     results_list[[i]] <- these_rows
   }
@@ -208,12 +213,131 @@ if('final_authors.RData' %in% dir('../data')){
        file = '../data/final_authors.RData')
 }
 
-# Get a count
-final_authors_aggregated <-
-  final_authors %>%
-  group_by(author) %>%
-  summarise(n = n(),
-            titles = paste0(title, collapse = ', '),
-            affiliations = paste0(affiliation, collapse = ', '),
-            cited = sum(cited)) %>% 
-  arrange(desc(n))
+# Get email address
+if('email_addresses.RData' %in% dir('../data')){
+  load('../data/email_addresses.RData')
+} else {
+  
+  # Get a count
+  final_authors_aggregated <-
+    final_authors %>%
+    group_by(author) %>%
+    summarise(n = n(),
+              titles = paste0(title, collapse = ', '),
+              # cited = sum(cited),
+              affiliations = paste0(affiliation, collapse = ', ')) %>% 
+    arrange(desc(n))
+  
+  # Get email addresses
+  get_email_address <- function(affiliation,
+                                return_only_first = TRUE){
+    require(stringr)
+    the_pattern <- '[[:alnum:].-_]+@[[:alnum:].-]+$'
+    # matched <- str_match(affiliation, the_pattern)
+    matched <- 
+      unlist(regmatches(affiliation, gregexpr("([_a-z0-9-]+(\\.[_a-z0-9-]+)*@[a-z0-9-]+(\\.[a-z0-9-]+)*(\\.[a-z]{2,4}))", affiliation)))
+    if(length(matched) == 0){
+      matched <- NA
+    }
+    if(return_only_first){
+      matched <- matched[1]
+    } 
+    return(matched)
+  }
+  
+  final_authors$email <- NA
+  for (i in 1:nrow(final_authors)){
+    message(i)
+    final_authors$email[i] <-
+      get_email_address(final_authors$affiliation[i])
+  }
+  
+  # # Get ALL email addresses
+  # all_email_addresses <- c()
+  # for (i in 1:nrow(final_authors)){
+  #   message(i)
+  #   all_email_addresses <-
+  #     c(all_email_addresses,
+  #       get_email_address(final_authors$affiliation[i],
+  #                         return_only_first = FALSE))
+  # }
+  # 
+  # # Keep only unique
+  # unique_email_addresses <- sort(unique(all_email_addresses))
+  
+  # Get a one-row per email address dataframe
+  email_df <-
+    final_authors %>% 
+    filter(!duplicated(email)) %>%
+    filter(!is.na(email))
+  
+  # Get last name
+  email_df$last_name <- unlist(lapply(strsplit(as.character(df$author), ' '), function(x){x[length(x)]}))
+  
+  # Save for later
+  save(email_df,
+       final_authors,
+       final_authors_aggregated,
+       file = '../data/email_addresses.RData')
+}
+
+
+# Send emails
+library(mailR)
+
+connection <- file('../credentials/password.txt')
+password <- readLines(connection)
+close(connection)
+
+# Define function for sending emails
+sendify <- function(df){
+  
+  # Define body
+  body <- paste0(
+    'Dear Dr. ', 
+    df$last_name,
+    '\n\n',
+    'I found your name and email through your article "',
+    df$title,
+    '", published in ',
+    df$year,
+    '.\n\n',
+    'For my PhD research on the economics of malaria, I am conducting a ',
+    'survey of malaria research experts. I was hoping you would have two minutes or so ',
+    'to answer a few questions. The survey is at ',
+    'https://goo.gl/forms/IroAEooDuJ6KM5Ho2 .\n\n',
+    'Thank you very much for your time. If you have any questions, please do not ',
+    'hesitate to contact me.\n\n',
+    'Best,\n\n',
+    'Joe Brew\n',
+    'www.economicsofmalaria.com\n\n',
+    '(P.S. If you want more details on the study I am doing, visit ',
+    'https://github.com/joebrew/malaria_survey#can-we-do-it-a-survey-of-research-professionals-on-the-timeline-and-obstacles-to-eliminating-malaria .)'
+    
+    
+  )
+  
+  # Define subject
+  the_subject <- paste0(
+    'Hi Dr. ',
+    df$last_name,
+    ' - questions about malaria eradication'
+  )
+  send.mail(from = "joebrew@gmail.com",
+            to = as.character(df$email),
+            subject = the_subject,
+            body = body,
+            smtp = list(host.name = "smtp.gmail.com", 
+                        port = 465, 
+                        user.name="joebrew@gmail.com", 
+                        passwd=password, 
+                        ssl=TRUE),
+            authenticate = TRUE,
+            # attach.files = '../in_kind_proposal.pdf',
+            send = TRUE)
+}
+
+for (i in 1:nrow(email_df)){
+  sendify(df = email_df[i,])
+  Sys.sleep(60)
+}
