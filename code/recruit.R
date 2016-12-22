@@ -355,7 +355,7 @@ sendify <- function(df){
             send = TRUE)
 }
 
-for (i in 1050:nrow(email_df)){
+for (i in 1417:nrow(email_df)){
   message(paste0(i, ' of ', nrow(email_df)))
   sendify(df = email_df[i,])
   z <- data.frame(number = i)
