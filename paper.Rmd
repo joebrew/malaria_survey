@@ -1,0 +1,301 @@
+---
+title: Silent pessimists - researchers' perceptions of malaria eradication and implications for health spending
+author:
+  - name: Joe Brew
+    email: joebrew@economicsofmalaria.com
+    affiliation: isglobal,cism
+    footnote: Corresponding Author
+  - name: Laia Cirera Crivillé
+    email: laia.cirera@isglobal.org 
+    affiliation: isglobal,cism
+  - name: Elisa Sicuri
+    email: elisa.sicuri@isglobal.org 
+    affiliation: isglobal,icl,cism
+address:
+  - code: isglobal
+    address: Barcelona Institute for Global Health, c/ Rosselló, 132, 5è 2a. 08036, Barcelona, Spain
+  - code: icl
+    address: Imperial College London, South Kensington Campus, London SW7 2AZ, U.K.
+  - code: cism
+    address: Centro de Investigação em Saúde de Manhiça, Vila da Manhiça, Bairro Cambeve, Rua 12, Distrito da Manhiça, CP 1929, Maputo, Mozambique
+abstract: |
+  Quantifying an event's probability and time frame is essential for calculating its expected value. In the case of global malaria eradication, uncertainty regarding feasibility makes it difficult for policymakers and public health practitioners to make fully informed decisions. The opportunity cost of investments in eradication-specific interventions can be high, particularly in contexts with other urgent health priorities. In a systematic survey of malaria researchers, we query perceptions regarding the likelihood and time frame of eradication, as well as the perceived chief areas needed for improvement in order for eradication to be achieved. We assess pessimism/optimism (via the proxy of years-to-eradication), broken down by area of expertise. Our results, which suggest a disconnect between public institutional discourse and private opinion, serve as a barometer of professional perspectives, and serve to highlight areas where attention is most needed for eradication to be achieved.
+  
+bibliography: library.bib
+output: rticles::elsevier_article
+---
+
+```{r, echo = FALSE, warning = FALSE, message = FALSE, comment = NA, error= FALSE, cache = F}
+# No scientific notation
+options(scipen=999)
+
+# Packages (load child-specific packages in their respective files)
+library(knitr)
+library(dplyr)
+library(ggplot2)
+library(DT)
+library(tidyr)
+
+# Basic knitr options
+opts_chunk$set(comment = NA, 
+               echo = FALSE, 
+               warning = FALSE, 
+               message = FALSE, 
+               error = TRUE, 
+               cache = FALSE)
+```
+
+```{r}
+# Send emails
+source('code/recruit.R', chdir = TRUE)
+
+# Load data
+file_name <- paste0('snapshot_', Sys.Date(), '.RData')
+if(!file_name %in% dir('snapshots')){
+  # Fetch data
+  library(gsheet)
+  url_responses<- 'https://docs.google.com/spreadsheets/d/1yeQ4TR73mdnDABPZ-ZEg3DAFu2Bko5NJ_nkMcNKr2lo/edit?usp=sharing'
+  df <- gsheet2tbl(url_responses)
+  
+  # Manually rename variables
+  names(df) <- tolower(gsub('.', '_', names(df), fixed = TRUE))
+  names(df)[4:17] <-
+    c('area',
+      'years_10',
+      'years_20',
+      'years_30',
+      'years_40',
+      'years_50',
+      'years',
+      'governance',
+      'health_workforce',
+      'health_financing',
+      'health_technologies',
+      'health_information',
+      'service_delivery',
+      'comments')
+
+  # Save a snapshot
+  save(df, 
+       file = paste0('snapshots/',
+                     file_name))
+} else {
+  load(paste0('snapshots/',
+              file_name))
+}
+```
+
+```{r}
+# Clean up survey responses
+# Make NA all empty responses
+df$comments[df$comments == ''] <- NA
+df$email_address[df$email_address == ''] <- NA
+# Flag duplicates
+df$duplicate <- duplicated(df$email_address)
+# Remove duplicates
+df <- df[is.na(df$email_address) |
+           !df$duplicate,]
+# Create area dummies
+df$area <- tolower(df$area)
+df$area <- gsub('/', ', ', df$area)
+df$area <- gsub('(', '', df$area, fixed = TRUE)
+df$area <- gsub(')', '', df$area, fixed = TRUE)
+areas <- tolower(paste0(sort(unique(df$area)), collapse = ', '))
+areas <- sort(unique(unlist(strsplit(x = areas, split = ','))))
+for (j in 1:length(areas)){
+  df[,paste0(
+    'area_',
+    areas[j]
+  )] <- NA
+}
+for (j in 1:length(areas)){
+  df[,paste0(
+    'area_',
+    areas[j]
+  )] <- grepl(areas[j], df$area)
+}
+
+# Make years numeric
+df$years <- tolower(df$years)
+# more needs to be done here
+
+# Make comments standardized
+df$comments <- tolower(df$comments)
+
+df <- data.frame(df)
+
+# Clean up missing responses
+for (i in seq(10, 50, 10)){
+  df[,paste0('years_', i)][df[,paste0('years_', i)] == ''] <- NA
+  df[,paste0('years_', i)] <-
+    factor(df[,paste0('years_', i)],
+           levels = c('0%',
+                      '1-20%',
+                      '21-40%',
+                      '41-60%',
+                      '61-80%',
+                      '81-99%',
+                      '100%'))
+}
+
+years_data <- 
+  gather(df, key,
+         value, 
+         years_10:years_50)
+
+
+
+# plot
+ggplot(data = years_data %>%
+         filter(!is.na(value)),
+       aes(x = value)) +
+  geom_bar() +
+  facet_wrap(~key) +
+  theme_classic()
+
+# library(wordcloud2)
+# areas_df <- data.frame(word = areas)
+# areas_df$freq <- NA
+# for (i in 1:nrow(areas_df)){
+#   areas_df$freq[i] <-
+#     length(which(grepl(areas_df$word[i], df$area)))
+# }
+# areas_df <- areas_df %>% filter(word != '')
+# wordcloud2(data = areas_df,
+#            color = 'black', 
+#            size = 2, minRotation = -pi/6, maxRotation = pi/6,
+#   rotateRatio = 0.9)
+```
+
+```{r}
+# Results cleanup
+```
+
+# Introduction
+
+
+## Background
+
+The scientific and public health communities have had eradication on their long-term agenda since the WHO established the Global Malaria Eradication Program in the 1950s [@Njera2011]. Following the failure of the WHO's first attempt, the focus shifted away from global eradication and towards local elimination and control strategies. 
+
+In recent years, much of the discourse regarding malaria has shifted back to global eradication [@Roberts2007], with funders, researchers, and public health practitioners rallying to the cause [@Tanner2015]. The Bill and Melinda Gates Foundation has begun actively promoting eradication as feasible "within a generation" [@Gates2014], and the leadership of the World Health Organization (WHO) has supported this goal. Even in areas of high endemicity, advances in immunology, parasitology, modeling and vaccinology, along with rapid economic development, have made eradication appear a more feasible goal, even if not possible in the short term [@Snow2015, @Eckhoff2014]. From both administrative [@Yamey2004] and scientific [@Alonso2011] points of view, eradication has never before received so much attention, nor appeared so within grasp.
+
+Most of the current research on expert opinion regarding the feasibility of malaria eradication focuses on the \emph{how} rather than the \emph{if} and the \emph{when} [@Tanner2015]. The participants in the Malaria Eradication Research Agenda (MalERA) process, in particular, have positioned themselves as thought leaders in the field of guiding research goals and identifying gaps in order for elmination to occur [@Alonso2011]. Though the MalERA authors firmly state that eradication is \emph{not} feasible given the "current tools and state of knowledge", mentions to the time frame are vague ("within the lifetime of young scientists just embarking on their careers") and no mention is made of the perception of the probability of achieving eradication.  
+
+
+## The problem
+
+The WHO Global Malaria Programme (GMP) has acknowledged that it "needs to take an official position on how and under what timeline malaria eradication could be achieved" [@WHO2015]. Such a position could inform policy, and plays a crucial role in the economic analysis of the expected value of malaria control inteventions.
+
+However, no such position has been taken. This omission is likely intentional, and certainly understadable, given that MalERA's and the WHO GMP's goals are to guide research and technology in the direction of eradication, and not necessarily address the larger and much more subjective questions of \emph{if} and \emph{when}.  
+
+But just how close are we to eradication? The objective serves to inspire, rally funder support, motivate researchers, and focus the efforts of public health practitioners. Proponents of disease eradication point to the success of historical and current campaigns (smallpox and polio, respectively), and highlight the benefits in health and wealth to future generations. However, the opportunity cost of investments in eradication-specific interventions can be high. And the “expected value” of an investment in a binary scenario (eradication or not) is a function of the probability of the scenario’s occurrence, and the temporal lag of that occurrence. Therefore, knowing the likelihood and time frame of eradication of malaria is essential for making sound investments in health. 
+
+## The need for the wisdom of crowds
+
+Patients often ask for a “second opinion”, a request which implicitly recognizes two important truths: (1) that an expert can sometimes be wrong and (2) that the combined opinions of multiple people can better approximate the truth than the opinion of only one. As Sir Francis Galton demonstrated in his famous ox-weight experiment [@Wallis2014], averaging the opinions of many can be more accurate than taking the opinion of any single expert, since the biases of diverse viewpoints can be complementary and symbiotic. 
+
+Additionally, one could argue that assessing likelihood and time frame of eradication is too important, subjective and complex a task to be left to only powerful individuals or small panels and committees. It requires the “wisdom of crowds.” Measuring consensus and discord among disease-specific researchers from a variety of disciplines can serve as a barometer of (informed) opinion, both guiding resources and identifying areas of concern [@Keenan2013].
+
+## The justification
+
+A great deal of previous research already covers the the cost per case prevented [@Sicuri2011, @Silumbe2015, @Btto2016, @IlungaIlunga2014, @Dalaba2015]. Likewise, a literature exists which could serve as a model for quantifying the location-specific opportunity costs associated with funneling funds towards malaria eradication [@Stuckey2014, @White2011, @Korenromp2012]. The correct discount rate for estimating the value of future lives saved is more of a philosphical question than an economic one. This leaves only the probability and time-frame to eradication, questions which have been addressed anecdotally, but never answered quantitatively. 
+
+
+The economic case for striving to achieve malaria eradication is compelling [@Barofsky2015]. Though the case-specific marginal cost of eradication can be expected to be high (relative to a simple control approach), successful eradication would mean massive recurring savings in the long-term [@Barrett2013]. However, to the extent that the case-specific marginal cost of prevention in an eradication campaign is high, estimating the likelihood of success is fundamental to the correct distribution of resources, particularly in low-income environments. 
+
+In other words, the rational assignment of resources for malaria eradication campaigns hinges on the expected value of those campaigns. We can describe this relationship formulaically below: 
+
+\begin{center}
+$I_{T}$ = $P(x)_{}$ $\dfrac{B(m_{})}{m_{}}$(1 + $\delta$)$^{-T}$ -  $P(x)_{}$ $\dfrac{C(m_{})}{m_{}}$ (1 + $\delta$)$^{-T}$
+\end{center}
+
+\begin{itemize}
+\item $ I $ is the return on investment
+\item $ m $ is the number of malaria cases
+\item $ x $ is the cut-off for a "successful campaign", ie the portion of eradication achieved
+\item $ T $ is the time-frame (to both costs and benefits)
+\item $ P $ is the probability of success
+\item $ B $ is the benefit of preventing malaria
+\item $ C $ is the cost of preventing malaria
+\item $ \delta $ is the discount rate and opportunity cost
+\end{itemize}
+
+(I) is the return on investment at time (T) (the "end of malaria"). We take the present value of the benefits multiplied by the probability of succcess minus the value of costs times the probability of success, and multiplyboth terms by the discount rate traised to T to arrive at the return on investment. 
+
+
+## Objective
+
+The objective of this study is simple: to help guide the optimal distribution of health resources by gauging (expert) opinion about, estimating the likelihood of, and quantifying the time frame to malaria eradication through a systematic survey of malaria research professionals from a wide array of academic disciplines. 
+
+
+
+# Methods
+
+## Ethics
+
+This research followed the principles of the Declaration of Helsinki. The study's protocol was approved by the Scientific Committee of the Barcelona Institute for Global Health.
+
+## Participants
+
+Our study population included all first authors (with available email addresses) returned in a PubMed search for the term "malaria" from January 1, 2010 through December 20, 2016. Personalized emails addressing the author by name and mentioning the relevant paper were sent to each of the `r nrow(email_df)` authors during the period from December 20, 2016 through January 2, 2017. Researchers were invited to participate by clicking a link to the survey form. Participants were informed directly on the survey form of the study's purpose, that responses were not guarnteed to be anonymous, and where to find further details on the study.
+
+## Survey
+
+The survey was simple, consisting of only name, email, and four content-related fields along with a "general comments" section. The survey was administered and data were collected through Google Drive. The original survey is viewable at [https://goo.gl/forms/IroAEooDuJ6KM5Ho2](https://goo.gl/forms/IroAEooDuJ6KM5Ho2).
+
+Content-related survey fields consisted of:
+
+1. Area of expertise.
+
+2. Perceived probability (%) of malaria eradication in 10, 20, 30, 40, and 50 years.
+
+3. Free choice perceived number of years until malaria eradication.
+
+4. Ranking of the WHO's "health system building blocks" in regards to attention needed in order to achieve eradication.
+
+## Analysis
+
+Survey results were first analyzed descriptively. Following Francis Galton's example, we naively take the average of all responses as the likely point estimate for event probabilities, and the totality of the responses to each numeric question as the likely confidence interval of those likelihoods and time frames.
+
+Ordinary least squares regression was employed to estimate the effect of area of expertise on the eradication pessimism-optimism (through the proxy of perceived years to eradication).
+
+Content analysis of free text comments was carried out using frequency analyses. Comments were categorized and coded according to (more details needed here).
+
+All analysis was carried out in R language [@R]. All analysis code, as well as the code used for the identification and contacting of participants, is publicly available at [https://github.com/joebrew/malaria_survey](https://github.com/joebrew/malaria_survey). 
+
+The searching and retrieval of information from the PubMed database was carried out using the RISmed package [@Kovalchik2015]. Qualitative analysis relied on the RQDA package (citation needed here). 
+
+
+# Results
+
+A total of `r nrow(df)` researchers participated in the survey.
+
+
+
+
+# Discussion
+
+
+General note about pessimism. 
+
+General note about areas needing attention.
+
+Difference between pessimism based on expertise.
+
+## Limitations
+
+No distinguishing of quality, experience, etc.
+
+No inclusion of program workers
+
+Potential bias due to non-anonymity
+
+Flaws generally in wisdom of crowd approach
+
+## Implications
+
+
+
+References {#references .unnumbered}
+==========
