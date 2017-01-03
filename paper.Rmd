@@ -5,9 +5,6 @@ author:
     email: joebrew@economicsofmalaria.com
     affiliation: isglobal,cism
     footnote: Corresponding Author
-  - name: Laia Cirera Crivillé
-    email: laia.cirera@isglobal.org 
-    affiliation: isglobal,cism
   - name: Elisa Sicuri
     email: elisa.sicuri@isglobal.org 
     affiliation: isglobal,icl,cism
@@ -33,8 +30,11 @@ options(scipen=999)
 library(knitr)
 library(dplyr)
 library(ggplot2)
-library(DT)
 library(tidyr)
+library(broom)
+library(RColorBrewer)
+# library(Hmisc)
+# library(Rmisc)
 
 # Basic knitr options
 opts_chunk$set(comment = NA, 
@@ -42,10 +42,14 @@ opts_chunk$set(comment = NA,
                warning = FALSE, 
                message = FALSE, 
                error = TRUE, 
-               cache = FALSE)
+               cache = FALSE,
+               fig.align = 'center')
 ```
 
 ```{r}
+# Get publication theme for charts
+source('theme_publication.R')
+
 # Send emails
 source('code/recruit.R', chdir = TRUE)
 
@@ -100,8 +104,29 @@ df$area <- tolower(df$area)
 df$area <- gsub('/', ', ', df$area)
 df$area <- gsub('(', '', df$area, fixed = TRUE)
 df$area <- gsub(')', '', df$area, fixed = TRUE)
+# Perform some replacements
+df$area[df$area == 'biochemistry'] <- 'chemistry'
+df$area[df$area == 'medical entomology'] <- 'entomology'
+df$area[df$area == 'vector biology'] <- 'biology'
+
 areas <- tolower(paste0(sort(unique(df$area)), collapse = ', '))
 areas <- sort(unique(unlist(strsplit(x = areas, split = ','))))
+areas <- trimws(areas, which = 'both')
+old_areas <- areas
+
+# Remove those areas for which there are fewer than 5 of a kind
+areas_df <- data.frame(area = areas)
+areas_df$count <- NA
+for (i in 1:nrow(areas_df)){
+  areas_df$count[i] <-
+    length(which(grepl(areas_df$area[i], 
+          df$area)))
+}
+areas_df <- areas_df %>%
+  filter(area != '',
+         count >= 5)
+areas <- areas[areas %in% areas_df$area]
+
 for (j in 1:length(areas)){
   df[,paste0(
     'area_',
@@ -115,12 +140,31 @@ for (j in 1:length(areas)){
   )] <- grepl(areas[j], df$area)
 }
 
+# Get number of areas
+# Average number of areas
+area_counter <- function(x){
+  result <- unlist(gregexpr(',', x))
+  if(result[1] == -1){
+    return(1)
+  } else {
+    return(length(result) + 1)
+  }
+}
+df$n_areas <- sapply(df$area, area_counter)
+
 # Make years numeric
 df$years <- tolower(df$years)
 # more needs to be done here
 
 # Make comments standardized
 df$comments <- tolower(df$comments)
+
+# Clean up names
+names(df) <- tolower(gsub('.', '_', names(df), fixed = TRUE))
+names(df) <- gsub(' ', '_', names(df))
+names(df) <- gsub('-', '_', names(df))
+names(df) <- gsub('&', 'and', names(df), fixed = TRUE)
+names(df) <- gsub('__', '_', names(df))
 
 df <- data.frame(df)
 
@@ -138,33 +182,52 @@ for (i in seq(10, 50, 10)){
                       '100%'))
 }
 
-years_data <- 
-  gather(df, key,
-         value, 
-         years_10:years_50)
+# Clean up years
+df$years[df$years %in% c('', '10%',
+                         'cannot say',
+                         'depends on approach and commitment',
+                         "human species may be eradicated but zoonotic species may come up",
+                         "i don't know - too many unknown variables",
+                         "it depends...hard to predict.",
+                         "i think we have to be humble. malaria eradication was promised a long time ago...",
+                         "it is depend on global stability and climate change",
+                         "l don't know but it will remain big health problem",
+                         "not sure - depends on when the world begins to take the right steps towards eradication.",
+                         'not year but want to')] <- NA
+df$years[grepl('never|nevet|ever', df$years)] <- 50
+df$years <- gsub(' years| yrs|years|yrs| yeras|about ', '', df$years)
+df$years[df$years %in% c('100+',
+                         '≥100 to a global zero',
+                         '> 50',
+                         '50-100',
+                         '50 ish',
+                         '50yrs',
+                         '60 (one more generation)',
+                         '75a',
+                         'at least 400',
+                         "cannot be fully erdicated-some local eradication can be achieved within 50 ",
+                         'it will not be eradicated',
+                         'more than 50',
+                         'unlikely',
+                         'i doubt it can be eradicated at all')] <- 50
+df$years[df$years == '10-15'] <- 12.5
+df$years[df$years == '20-30'] <- 25
+df$years[df$years == '40-50'] <- 45
+df$years <- as.numeric(as.character(df$years))
+df$years[df$years > 50] <- 50
+
+# Clean up the rankings
+bb <- c('governance', 'health_workforce',
+        'health_financing', 'health_technologies',
+        'health_information', 'service_delivery')
+for (i in 1:nrow(df)){
+  sub_df <- df[i,bb]
+  new_values <- sub_df / sum(sub_df, na.rm = TRUE) * 21
+  new_values[new_values > 6] <- 6
+  df[i,bb] <- new_values
+}
 
 
-
-# plot
-ggplot(data = years_data %>%
-         filter(!is.na(value)),
-       aes(x = value)) +
-  geom_bar() +
-  facet_wrap(~key) +
-  theme_classic()
-
-# library(wordcloud2)
-# areas_df <- data.frame(word = areas)
-# areas_df$freq <- NA
-# for (i in 1:nrow(areas_df)){
-#   areas_df$freq[i] <-
-#     length(which(grepl(areas_df$word[i], df$area)))
-# }
-# areas_df <- areas_df %>% filter(word != '')
-# wordcloud2(data = areas_df,
-#            color = 'black', 
-#            size = 2, minRotation = -pi/6, maxRotation = pi/6,
-#   rotateRatio = 0.9)
 ```
 
 ```{r}
@@ -197,7 +260,7 @@ Patients often ask for a “second opinion”, a request which implicitly recogn
 
 Additionally, one could argue that assessing likelihood and time frame of eradication is too important, subjective and complex a task to be left to only powerful individuals or small panels and committees. It requires the “wisdom of crowds.” Measuring consensus and discord among disease-specific researchers from a variety of disciplines can serve as a barometer of (informed) opinion, both guiding resources and identifying areas of concern [@Keenan2013].
 
-## The justification
+## Rationale
 
 A great deal of previous research already covers the the cost per case prevented [@Sicuri2011, @Silumbe2015, @Btto2016, @IlungaIlunga2014, @Dalaba2015]. Likewise, a literature exists which could serve as a model for quantifying the location-specific opportunity costs associated with funneling funds towards malaria eradication [@Stuckey2014, @White2011, @Korenromp2012]. The correct discount rate for estimating the value of future lives saved is more of a philosphical question than an economic one. This leaves only the probability and time-frame to eradication, questions which have been addressed anecdotally, but never answered quantitatively. 
 
@@ -271,31 +334,347 @@ The searching and retrieval of information from the PubMed database was carried 
 
 A total of `r nrow(df)` researchers participated in the survey.
 
+## Expertise profile
+
+```{r}
+x <- df %>%
+  group_by(n_areas) %>%
+  tally %>%
+  mutate(p = n / sum(n) * 100)
+```
+
+Areas of expertise were non-exclusive and self-described, with participants having the option to choose from up to 3 of 10 checkboxes\footnote{Checkbox categories were anthropology, biology, clinical medicine, economics, epidemiology, immunology, parasitology, political science, statistics, and virology.}, or to write in one or more "other" areas of expertise. `r x$n[1]` participants (`r round(x$p[1], digits = 1)`%) declared only one area of expertise, with `r sum(x$n[1:3])` (`r round(sum(x$p[1:3]), digits = 1)`%) declaring three or fewer.
+
+Participants had a total of `r length(old_areas)` unique (self-described) areas of expertise, of which `r length(areas)` areas of expertise had 5 or more participants. 
+
+```{r}
+temp <- areas_df %>%
+  arrange(desc(count))
+temp$area <- trimws(temp$area, which = 'both')
+names(temp) <- c('Area', 'Researchers')
+temp$Area <- as.character(temp$Area)
+temp$Area <- Hmisc::capitalize(temp$Area)
+kable(temp)
+```
 
 
+## Likelihood of eradication
+
+Participants were asked to quantify (as a percentage) the likelihood of eradication in the next 10, 20, 30, 40, and 50 years. Most participants saw eradication as extremely unlikely in the next 10-30 years, but increasingly likely thereafter. The following figure shows the distribution of year-specific likelihood perceptions (panels A-E), as well as an illustration of how both likelihood and uncertainty grow over time (panel F).
+
+```{r}
+# Define function for analyzing the years_n columns
+years_n <- function(n){
+  x <- df %>%
+    dplyr::select_(paste0('years_', n)) 
+  names(x) <- 'likelihood'
+  result <- x %>%
+    group_by(likelihood) %>%
+    tally %>%
+    mutate(p = n / sum(n) * 100) %>%
+    filter(!is.na(likelihood))
+  
+  out <- list()
+  out[[1]] <- result
+  out[[2]] <-
+    ggplot(data = result,
+           aes(x = likelihood,
+               y = p)) +
+    geom_bar(stat = 'identity',
+             fill = 'darkorange',
+             alpha = 0.6) +
+    labs(title = paste0(toupper(letters[n/10]),'. ', n, ' years'),
+         subtitle = 'Perceived likelihood of eradication',
+         x = 'Likelihood',
+         y = '%') +
+    theme_publication(base_size = 10) +
+    theme(axis.text.x = element_text(angle = 90))
+  return(out)
+}
+```
+
+```{r, fig.height = 7}
+# Make plots of all
+years <- seq(10, 50, 10)
+for (i in 1:length(years)){
+  assign(paste0('g',i ),
+         years_n(n = years[i])[[2]])
+  x <- years_n(n = years[i])[[1]]
+  x$year <- years[i]
+  assign(paste0('x', i),
+         x)
+  
+}
+# Combine all data
+x <- bind_rows(x1, x2, x3, x4, x5)
+
+# Make an aggregated version
+x$val <- ifelse(x$likelihood == '0%', 0,
+                ifelse(x$likelihood == '1-20%', 10,
+                       ifelse(x$likelihood == '21-40%', 30,
+                              ifelse(x$likelihood == '41-60%', 50,
+                                     ifelse(x$likelihood == '61-80%', 70,
+                                            ifelse(x$likelihood == '81-99%', 90,
+                                                   ifelse(x$likelihood == '100%', 100, NA)))))))
+xa <- x %>%
+  dplyr::group_by(year) %>%
+  dplyr::summarise(avg = weighted.mean(x = val, w = n, na.rm = TRUE),
+            q3 = Hmisc::wtd.quantile(val, weights = n, 0.75, na.rm = TRUE),
+            q1 = Hmisc::wtd.quantile(val, weights = n, 0.25, na.rm = TRUE))
+
+g6 <- 
+  ggplot(data = xa,
+         aes(x = year,
+             y = avg)) +
+  geom_ribbon(aes(ymin = q1,
+                  ymax = q3),
+              fill = 'orange',
+              alpha = 0.6) +
+  geom_line(color = 'darkorange') +
+  theme_publication(base_size = 10) +
+  xlab('Years') +
+  ylab('Average likelihood') +
+  ggtitle('G. Aggregated perceptions',
+          'Shaded area = inter-quartile range') 
+
+Rmisc::multiplot(g1, g3, g5,
+                 g2, g4, g6,
+                 cols = 2)
+```
+
+## Time frame to eradication
+
+Participants were asked to provide the number of years they believe it will take until eradication can be achieved. `r length(which(is.na(df$years)))` (`r round(length(which(is.na(df$years))) / nrow(df) * 100, digits = 1)`%) were either blank or uninteligible, whereas `r length(which(!is.na(df$years)))` participants responded. Among respondants, `r length(which(df$years >= 50))` (`r round(length(which(df$years >= 50)) / length(which(!is.na(df$years))) * 100, digits = 1)` %) estimated that it would be 50 or more years until eradication. The below histogram shows the distribution of responses, appended at 50.
+
+```{r, fig.height = 3.5, fig.width = 4}
+ggplot(data = df,
+       aes(x = years)) +
+  geom_histogram(fill = 'darkorange',
+                 alpha = 0.6) +
+  theme_publication(base_size = 10) +
+  labs(x = 'Years',
+       y = 'Responses',
+       title = 'Perceived years until eradication',
+       subtitle = '(Estimates of greater than 50 years reduced to 50)')
+```
+
+## Difference in perceptions by expertise
+
+Participants were heterogenous in their perceptions, with all of the 5 pre-determined cut-offs containing the whole range of likelihoods (0-100%), and the free-form time frame responses suggesting that eradication would be achieved in as little as `r min(df$years, na.rm = TRUE)` to as many as "never".  Heterogeneity can be partly explained by area of expertise, as evidenced by significant differences in the perceived years to eradication by area of expertise.
+
+```{r, fig.height = 4.5, fig.width = 4.5}
+# Get averages per area
+results_list <- list()
+dist_list <- list()
+year_list <- list()
+
+small_areas <- areas_df$area[areas_df$count >= 15]
+small_areas <- areas[1:12]
+for (i in 1:length(small_areas)){
+  this_area <- small_areas[i]
+  sub_data <- df[df[,paste0('area_', gsub(' ', '_', this_area))],]
+  this_df <- data_frame(area = this_area,
+                        avg = mean(sub_data$years, na.rm = TRUE),
+                        med = median(sub_data$years, na.rm = TRUE))
+  dist_df <- data_frame(area = this_area,
+                        val = sub_data$years)
+  numberfy <- function(x){
+    ifelse(x == '0%', 0,
+                ifelse(x == '1-20%', 10,
+                       ifelse(x == '21-40%', 30,
+                              ifelse(x == '41-60%', 50,
+                                     ifelse(x == '61-80%', 70,
+                                            ifelse(x == '81-99%', 90,
+                                                   ifelse(x == '100%', 100, NA)))))))
+    
+  }
+  year_df <- data.frame(area = this_area,
+                        year = seq(10, 50, 10),
+                        val = c(mean(numberfy(sub_data$years_10), na.rm = TRUE),
+                                mean(numberfy(sub_data$years_20), na.rm = TRUE),
+                                mean(numberfy(sub_data$years_30), na.rm = TRUE),
+                                mean(numberfy(sub_data$years_40), na.rm = TRUE),
+                                mean(numberfy(sub_data$years_50), na.rm = TRUE)))
+  for (q in seq(0, 100, 10)){
+    this_df[,paste0('q_', q)] <- 
+      quantile(sub_data$years, q / 100, na.rm = TRUE)
+  }
+  results_list[[i]] <- this_df
+  dist_list[[i]] <- dist_df
+  year_list[[i]] <- year_df
+}
+results <- bind_rows(results_list)
+dist_results <- bind_rows(dist_list)
+year_results <- bind_rows(year_list)
+dist_results$the_area <- dist_results$area
+
+ggplot(data = dist_results,
+       aes(#group = area,
+           #fill = area,
+           x = val)) +
+  geom_density(fill = 'darkorange',
+               alpha = 0.6) +
+  theme_publication(base_size = 10) +
+  labs(x = 'Years',
+       y = 'Density',
+       title = 'Perceived years to eradication',
+       subtitle = '12 most popular areas of expertise only') +
+  facet_wrap(~the_area) 
+```
+
+```{r, fig.height = 3.5, fig.width = 4}
+model_formula <- paste0('years ~ ',
+                        paste0(paste0('area_', gsub(' ', '_', small_areas)), collapse = ' + '))
+model_formula <- as.formula(model_formula)
+fit <- lm(model_formula, data = df)
+# Get confidence intervals too
+ci <- tidy(confint(fit))
+x <- cbind(tidy(fit), ci)
+names(x) <- c('term', 'estimate', 'se', 'stat', 'p', 'rownames', 'lwr', 'upr')
+x <- x %>%
+  dplyr::select(term, estimate,
+                p, lwr, upr)
+the_intercept <- x$estimate[1]
+x <- x[-1,]
+for (the_column in c('estimate', 'lwr', 'upr')){
+  x[,the_column] <- x[,the_column] + the_intercept
+}
+x$term <- gsub('area_|TRUE', '', x$term)
+x <- x %>%
+  dplyr::arrange(estimate)
+x$term <- gsub('_', '\n', x$term)
+x$term <- factor(x$term, levels = x$term)
+ggplot(data = x,
+       aes(x = term,
+           y = estimate)) +
+  geom_bar(stat = 'identity',
+           fill = 'darkorange',
+           alpha = 0.6) +
+  geom_errorbar(aes(ymin = lwr,
+                    ymax = upr),
+                alpha = 0.6,
+                width = 0.8) +
+  theme_publication(base_size = 10) +
+  labs(x = 'Area',
+       y = 'Years',
+       title = 'Perceived years to eradication',
+       subtitle = 'By expertise, adjusted for multiple areas of expertise') +
+  theme(axis.text.x = element_text(angle = 90))
+
+```
+
+Heterogeneity by area of expertise is also apparent in perceived likelihood of eradication over the pre-defined five time-points, as seen below.
+
+```{r, fig.height = 4, fig.width = 4.5}
+cols <- colorRampPalette(brewer.pal(9, 'Spectral'))(length(unique(year_results$area)))
+ggplot(data = year_results,
+       aes(x = year,
+           y = val)) +
+  geom_line(aes(group = area,
+           color = area,
+           lty = area)) +
+  theme_publication(base_size = 10) +
+  scale_color_manual(name = '',
+                     values = cols,
+                     labels = unique(year_results$area)) +
+  scale_linetype_manual(name="", 
+                        values = rep(1:6, 100)[1:length(unique(year_results$area))],
+                     labels = unique(year_results$area)) +
+  xlab('Years until eradication') +
+  ylab('Likelihood') +
+  ggtitle('Likelihood trajectories',
+          'By area of expertise')
+```
+
+## Health system building blocks 
+
+Finally, researchers were asked to rank the WHO's 6 health system building blocks as needing the most to least attention (6-1 scale) in order for eradication to be achieved. Disagreement was high, as evidenced by the variance in responses in the below point and violin chart. However, the general tendency was that governance was recognized as the most important area requiring attention, with health information thought to be the area least requiring attention.
+
+```{r}
+bb <- c('governance', 'health_workforce',
+        'health_financing', 'health_technologies',
+        'health_information', 'service_delivery')
+results_list <- list()
+for (i in 1:length(bb)){
+  this_df <- data.frame(bb = bb[i],
+                        ranking = as.numeric(df[,bb[i]]))
+  results_list[[i]] <- this_df
+}
+results <- bind_rows(results_list)
+results$bb <- gsub('_', '\n', results$bb)
+
+results_agg <-
+  results %>%
+  dplyr::group_by(bb) %>%
+  dplyr::summarise(avg = mean(ranking, na.rm = TRUE)) %>%
+  arrange(avg)
+results_agg$bb <- factor(results_agg$bb,
+                         levels = results_agg$bb)
+results$bb <- factor(results$bb, 
+                     levels = levels(results_agg$bb))
+
+ggplot(data = results) + 
+  geom_violin(aes(x = bb,
+           y = ranking),
+           fill = 'orange',
+              alpha = 0.6) +
+  geom_jitter(aes(x = bb,
+           y = ranking),
+           color = 'black',
+           with = 0.4,
+           height = 0.4,
+              alpha = 0.3,
+              size = 1) +
+  theme_publication(base_size = 10) +
+  labs(x = 'WHO Building block',
+       y = 'Ranking',
+       title = 'Perceived areas needing attention',
+       subtitle = 'Small points: jittered individual responses; large triangles: averages') +
+  geom_point(data = results_agg,
+             aes(x = bb,
+                 y = avg),
+             size = 5,
+             pch = 17,
+             color = 'black',
+             alpha = 0.8)
+```
 
 # Discussion
 
+## Collective pessimism
 
-General note about pessimism. 
+Our study reveals a striking gap between the public discourse on malaria eradication, and those views held (largely privately) by malaria researchers. Approximately three-quarters of respondents believe that malaria will not be eradicated in the next 50 years; in other words, assuming our pool of respondents is of typical post-PhD age, most believe they will not live to see eradication.
 
-General note about areas needing attention.
+If we take the pooled opinions of researchers, as revealed through this survey, as the best approximation of truth available, then the disconnect between public discourse on malaria eradication and private opinion is troubling. It suggests that the goals set by the Bill and Melinda Gates Foundation (eradication "within a generation") and the WHO GMP (eradication "within the lifetime of young scientists just embarking on their careers") are unrealistic at best, and misleading at worst. This has important implications for spending in public health, since the attention and resources of funders, researchers and government agencies are directed to those areas where a result is expected.
 
-Difference between pessimism based on expertise.
+On the other hand, there are many reasons to be skeptical that the combined "wisdom of crowds" of malaria researchers is a reliable indicator of truth. First, academic researchers are specialists - their narrow, field-specific view of eradication's feasibility is arguably less reliable than the more "global" views of the WHO, or Bill Gates. Second, a number of biases may come in to play in this study.
+
+Among these biases, 4 are worth mentioning specifically. (1) "Conjunction fallacy" suggests that the general goal of eradication may seem less likely than the sum of the goals of country-specific elimination. (2) A (reverse) variant of the "hot hand fallacy", in which researchers may mistakenly base their assessment of current chances of eradication on previous failures. (3) Parkinson's law of triviality suggests that researchers may disproportionately see the challenges of their own research (antimalarial drug resistance, etc.) as larger or more relevant to the global eradication campaign than they really are. (4) Finally, and ironically, "optimism bias" may play a perverse role in researchers' responses; though eradication is certainly a goal desired by all, one could argue that malaria research specialists subconciously realize that they actually stand to lose out profesionally in the case of eradication.
+
+Whether the collective "wisdom" of researchers is worth adhering to or not is arguable. That said, to the extent that researchers' private opinions differ so greatly from those of global health leaders is itself a noteworthy result. If leaders' high levels of optimism are well-placed, this suggests that researchers are unduly pessimistic, and efforts should be made to convince them that eradication is more feasible than they realize. If, on the other hand, collective wisdom is a better forecasting agent than the proclamations and objectives of global health leaders, then it is important to recognize the sad truth that we are likely further from eradication than we would like to be. In this case, though the discourse on eradication can be motivating and inspiring, resources should be directed in a manner that reflects an intended outcome's likelihood of occurrence.
+
+## Building blocks to eradication
+
+It is noteworthy that there was so much discord among researchers in regards to which WHO building blocks required the most attention in order for eradication to be achieved. All six possible categories received votes for both the lowest and highest levels of importance, as well as every level in between. And the difference between "health information" (the building block deemed as least important) and "governance" (the most important) was less than 0.5 on a 1-6 scale.
+
+This discord suggests that the path to implementing strategies for eradication is not clear, at least from the perspective of this study's participants. This could mean that further work is needed in order to prioritize which areas require the most investment and attention in order for eradication to occur. On the other hand, one could interpret this result as reflecting the fact that previous work on priorities (ie, MalERA) has not been fully accessed or understood by the larger malaria research community. 
+
+## Areas of expertise
+
+It is noteworthy that among the most "optimistic" experts were from the field of bioinformatics. This could be explained by the fact that, relative to other more "traditional" areas of science, informatics regularly sees paradigm shifts, and changes in technology and breakthroughs occur at a more rapid rate. That said, the high degree of optimism among chemists would seem to contradict this hypothesis. At any rate... (more details will go here).
 
 ## Limitations
 
-No distinguishing of quality, experience, etc.
+In addition to the biases mentioned above, this study has many limitations. First, though results are not disclosed at the individual level, this survey was not entirely anonymous, suggesting that social desirability bias may have influenced responses, and that selection bias likely meant our pool of participants were substantially different from those who choose not to participate.
 
-No inclusion of program workers
+Second, we made no distinguishment between quality of research, years of experience, academic achievements, geographical area, etc. Our inclusion criteria were simple and rudimentary, allowing us to access many diverse viewpoints, but (perhaps inappropriately) weighting all viewpoints as equal.
 
-Potential bias due to non-anonymity
+Third, this study included the corresponding authors of indexed journals. Though certainly a group with important knowledge related to malaria, this misses malaria control program employees, health agency workers, and other stakeholders. Their experiences and viewpoints are most likely vastly different from those of academecians.
 
-Flaws generally in wisdom of crowd approach
 
 ## Implications
 
-
+Our survey attempted to quantify the likelihood of and time frame to malaria eradication by gauging the collective opinion of malaria researchers. Our results suggest that eradication is unlikely in the short and medium terms, and that there exists a great deal of disagreement among researchers in regards to which areas require the most attention in order for eradication to occur. The implication of these results are three-fold: (1) that those working or investing in eradication-specific campaigns should factor in the low likelihood and long time frame when calculating those campaigns' expected value; (2) that champions of near-term eradication need to make a more compelling case to malaria researchers of eradication's feasibility, in order to better focus and inspire the latter; and (3) that discord among malaria researchers as to which areas need the most attention in order for eradication to occur suggests a need for open discussion and concensus-making, so that resources and focus are directed appropriately.
 
 References {#references .unnumbered}
 ==========
