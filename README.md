@@ -2,7 +2,7 @@
 
 ## Participant information 
 
-Please refer to the participant information sheet [here](https://docs.google.com/document/d/1zr7hW5Gys4qHlMBMT9AcfLCPAqqdIbzu-JjjMUXfEUQ/pub).
+Please refer to the participant information sheet [here](https://docs.google.com/document/d/1zr7hW5Gys4qHlMBMT9AcfLCPAqqdIbzu-JjjMUXfEUQ/pub). For additional information, feel free to contact joebrew@gmail.com
 
 ## Background
 
