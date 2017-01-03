@@ -1,5 +1,9 @@
 # Can we do it? A survey of research professionals on the timeline and obstacles to eliminating malaria
 
+## Participant information 
+
+Please refer to the participant information sheet [here](https://docs.google.com/document/d/1zr7hW5Gys4qHlMBMT9AcfLCPAqqdIbzu-JjjMUXfEUQ/pub).
+
 ## Background
 
 The WHO GMP has acknowledged that it "needs to take an official position on how and under what timeline malaria eradication could be achieved". Such a position could inform policy, and plays a crucial role in the economic analysis of the expected value of malaria control inteventions. Since no position has been taken, we propose using the “wisdom of [expert] crowds”. Aggregated expert opinion enables estimation of the expected value of eradication.
