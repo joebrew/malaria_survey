@@ -5,6 +5,9 @@ author:
     email: joebrew@economicsofmalaria.com
     affiliation: isglobal,cism
     footnote: Corresponding Author
+  - name: Menno Pradhan
+    email: m.p.pradhan@vu.nl
+    affiliation: vu,uva
   - name: Elisa Sicuri
     email: elisa.sicuri@isglobal.org 
     affiliation: isglobal,icl,cism
@@ -15,6 +18,10 @@ address:
     address: Imperial College London, South Kensington Campus, London SW7 2AZ, U.K.
   - code: cism
     address: Centro de Investigação em Saúde de Manhiça, Vila da Manhiça, Bairro Cambeve, Rua 12, Distrito da Manhiça, CP 1929, Maputo, Mozambique
+  - code: vu
+    address: Faculty of Economics and Business Administration, VU University Amsterdam, De Boelelaan 1105, 1081 HV Amsterdam, Netherlands
+  - code: uva
+    address: Faculty of Economics and Business, Section Microeconomics, University of Amsterdam, REC E, Roetersstraat 11, Amsterdam, Netherlands
 abstract: |
   Quantifying an event's probability and time frame is essential for calculating its expected value. In the case of global malaria eradication, uncertainty regarding feasibility makes it difficult for policymakers and public health practitioners to make fully informed decisions. The opportunity cost of investments in eradication-specific interventions can be high, particularly in contexts with other urgent health priorities. In a systematic survey of malaria researchers, we query perceptions regarding the likelihood and time frame of eradication, as well as the perceived chief areas needed for improvement in order for eradication to be achieved. We assess pessimism/optimism (via the proxy of years-to-eradication), broken down by area of expertise. Our results, which suggest a disconnect between public institutional discourse and private opinion, serve as a barometer of professional perspectives, and serve to highlight areas where attention is most needed for eradication to be achieved.
   
