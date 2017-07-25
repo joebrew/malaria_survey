@@ -26,6 +26,8 @@ abstract: |
   Quantifying an event's probability and time frame is essential for calculating its expected value. In the case of global malaria eradication, uncertainty regarding feasibility makes it difficult for policymakers and public health practitioners to make fully informed decisions. The opportunity cost of investments in eradication-specific interventions can be high, particularly in contexts with other urgent health priorities. In a systematic survey of malaria researchers, we query perceptions regarding the likelihood and time frame of eradication, as well as the perceived chief areas needed for improvement in order for eradication to be achieved. We assess pessimism/optimism (via the proxy of years-to-eradication), broken down by area of expertise. Our results, which suggest a disconnect between public institutional discourse and private opinion, serve as a barometer of professional perspectives, and serve to highlight areas where attention is most needed for eradication to be achieved.
   
 bibliography: library.bib
+params:
+  get_new_data: False
 output: rticles::elsevier_article
 ---
 
@@ -42,6 +44,13 @@ library(broom)
 library(RColorBrewer)
 # library(Hmisc)
 # library(Rmisc)
+# install.packages(c("gender", "genderdata"),
+#                  repos = "http://packages.ropensci.org",
+#                  type = "source")
+library(gender)
+library(wru)
+library(sampleSelection)
+library(stargazer)
 
 # Basic knitr options
 opts_chunk$set(comment = NA, 
@@ -61,7 +70,14 @@ source('theme_publication.R')
 source('code/recruit.R', chdir = TRUE)
 
 # Load data
-file_name <- paste0('snapshot_', Sys.Date(), '.RData')
+get_new_data <- params$get_new_data
+if(get_new_data){
+  file_name <- paste0('snapshot_', Sys.Date(), '.RData')
+} else {
+  snaps <- dir('snapshots')
+  dates <- as.Date(substr(snaps, 10, 19))
+  file_name <- snaps[which.max(dates)]
+}
 if(!file_name %in% dir('snapshots')){
   # Fetch data
   library(gsheet)
@@ -70,6 +86,7 @@ if(!file_name %in% dir('snapshots')){
   
   # Manually rename variables
   names(df) <- tolower(gsub('.', '_', names(df), fixed = TRUE))
+  names(df) <- gsub(' ', '_', names(df))
   names(df)[4:17] <-
     c('area',
       'years_10',
@@ -94,13 +111,15 @@ if(!file_name %in% dir('snapshots')){
   load(paste0('snapshots/',
               file_name))
 }
-```
 
-```{r}
 # Clean up survey responses
 # Make NA all empty responses
-df$comments[df$comments == ''] <- NA
-df$email_address[df$email_address == ''] <- NA
+df$comments <- ifelse(df$comments == '', 
+                      NA,
+                      df$comments)
+df$email_address <- ifelse(df$email_address == '',
+                           NA,
+                           df$email_address)
 # Flag duplicates
 df$duplicate <- duplicated(df$email_address)
 # Remove duplicates
@@ -151,7 +170,9 @@ for (j in 1:length(areas)){
 # Average number of areas
 area_counter <- function(x){
   result <- unlist(gregexpr(',', x))
-  if(result[1] == -1){
+  if(is.na(result)){
+    return(0)
+  } else if(result[1] == -1){
     return(1)
   } else {
     return(length(result) + 1)
@@ -233,13 +254,113 @@ for (i in 1:nrow(df)){
   new_values[new_values > 6] <- 6
   df[i,bb] <- new_values
 }
-
-
 ```
 
 ```{r}
-# Results cleanup
+# Get the non-respondents into the same data
+df$responded <- TRUE
+non_respondents <- email_df %>%
+  mutate(surname = `first _author_last_name`,
+         first_name = `first _author_first_name`,
+         name = author) %>%
+  dplyr::select(name, surname, first_name, email) %>%
+  filter(!email %in% df$email)
+
+# Add to one dataframe
+df <- bind_rows(df, non_respondents)
 ```
+
+```{r}
+# Predict the gender based on first name ####
+
+# Extract first/last names
+df$first_name <- tolower(unlist(lapply(strsplit(df$name, ' '), function(x){x[1]})))
+df$last_name <- tolower(unlist(lapply(strsplit(df$name, ' '), function(x){x[length(x)]})))
+df$surname <- df$last_name
+
+if(get_new_data){
+  # Get gender based on name
+  names_df <- df %>%
+    group_by(first_name) %>%
+    tally %>%
+    ungroup %>%
+    dplyr::select(-n)
+  # Get ethnicity based on last name
+  surnames_df <- df %>%
+    group_by(surname) %>% 
+    tally %>%
+    ungroup %>%
+    dplyr::select(-n)
+  gender_scores <- gender(names = names_df$first_name,
+              years = c(1940, 1990),
+              method = 'ssa') %>%
+    rename(first_name = name) %>%
+    dplyr::select(first_name,
+                  proportion_male,
+                  proportion_female,
+                  gender)
+  surname_scores <- 
+    predict_race(voter.file = surnames_df,
+                 surname.only = TRUE)
+  save(surname_scores,
+       gender_scores,
+       file = 'data/name_scores.RData')
+} else {
+  load('data/name_scores.RData')
+}
+
+# Get most likely ethnicity
+ethnicities <- c('white', 'black', 'hispanic',
+                 'asian', 'other')
+surname_scores$ethnicity <- ethnicities[apply(surname_scores[,2:6], 1, function(x){which.max(x)[1]})]
+
+# Join surname scores to df
+df <-
+  left_join(x = df,
+            y = surname_scores,
+            by = 'surname')
+df <-
+  left_join(x = df,
+            y = gender_scores,
+            by = 'first_name')
+
+# Flag non respondents as such
+df$responded[is.na(df$responded)] <- FALSE
+```
+
+```{r}
+# sentiment score of contents
+library(databrew)
+df$sentiment <- databrew::score_sentiment(df$comments)
+```
+
+```{r}
+# Heckman selection
+# We're estimating years as a function of sex and ethnicity
+ols1 = lm(years ~ sentiment  + area_epidemiology + area_anthropology, data = df[df$responded,])
+
+# Estimate likelihood of response
+# it is very desirable to have at least one variable in the selection equation that acts like an instrument:
+# (https://rpubs.com/wsundstrom/t_selection)
+# for us, this is ethnicity - it should affect response (due to language)
+# but not likely to affect optimism
+
+# Heckman 2 step
+heck1 <- heckit(responded ~ gender + ethnicity,
+                years ~ sentiment + area_epidemiology + area_anthropology, data = df)
+
+# Maximum likelihood (like heckman 2 step, but slightly different)
+# ML estimation of selection model
+ml1 = selection(responded ~ gender + ethnicity,
+                years ~ sentiment + area_epidemiology + area_anthropology, data = df)
+
+# # Look at results
+# stargazer(ols1, heck1, ml1,    
+#           # se=list(cse(ols1),NULL,NULL), 
+#           title="Regression on years until eradication", type="latex", 
+#           df=FALSE, digits=4)
+```
+
 
 # Introduction
 
@@ -298,8 +419,6 @@ $I_{T}$ = $P(x)_{}$ $\dfrac{B(m_{})}{m_{}}$(1 + $\delta$)$^{-T}$ -  $P(x)_{}$ $\
 
 The objective of this study is simple: to help guide the optimal distribution of health resources by gauging (expert) opinion about, estimating the likelihood of, and quantifying the time frame to malaria eradication through a systematic survey of malaria research professionals from a wide array of academic disciplines. 
 
-
-
 # Methods
 
 ## Ethics
@@ -324,6 +443,10 @@ Content-related survey fields consisted of:
 
 4. Ranking of the WHO's "health system building blocks" in regards to attention needed in order to achieve eradication.
 
+## Data generation
+
+The survey was intentionally as short as possible, so as to appeal to time-pressed participants. However, supplementary data on researchers' demographics is of value. Accordingly, we estimated the likelihood of a participant being of one of two genders (male or female) based on first name, and the likelihood of a participant being of one of five ethnicities (White, Black, Hispanic, Asian, Other) based on the provided last name.
+
 ## Analysis
 
 Survey results were first analyzed descriptively. Following Francis Galton's example, we naively take the average of all responses as the likely point estimate for event probabilities, and the totality of the responses to each numeric question as the likely confidence interval of those likelihoods and time frames.
@@ -336,10 +459,27 @@ All analysis was carried out in R language [@R]. All analysis code, as well as t
 
 The searching and retrieval of information from the PubMed database was carried out using the RISmed package [@Kovalchik2015]. Qualitative analysis relied on the RQDA package (citation needed here). 
 
+The estimation of gender and ethnicity likelihoods for each participant relied on Mullen's implementation of US Social Security Administration names' analysis [@gender2015] and Khanna et al's bayesian prediction algorithm for the estimation of racial categories [@wru2015].
+
+De-biasing of sample selection was carried out using Heckman's 2 step approach (citation needed), as implemented by Toomet [@toomet2008].
 
 # Results
 
 A total of `r nrow(df)` researchers participated in the survey.
+
+## Sample selection and de-biasing of results
+
+This section is unfinished. Below are regression outputs for both OLS and Heckman's 2 step model. I will update this soon.
+
+```{r}
+# stargazer(ols1, heck1, ml1,    
+#           # se=list(cse(ols1),NULL,NULL), 
+#           title="Regression on years until eradication", type="html",
+#           df=FALSE, digits=4)
+summary(ols1)
+summary(heck1)
+
+```
 
 ## Expertise profile
 
@@ -591,6 +731,26 @@ ggplot(data = year_results,
   ylab('Likelihood') +
   ggtitle('Likelihood trajectories',
           'By area of expertise')
+```
+
+## Sentiment analysis of free-text commentary
+
+This section is unfinished. Below is the distribution of "sentiment" among the responses (0 is neutral, below 0 is negative, above 0 is positive), but this is preliminary. The chart is colored by ethnicity, and faceted by gender.
+
+```{r}
+ggplot(data = df %>%
+         filter(responded) %>%
+         # mutate(n_areas = factor(n_areas)) %>%
+         filter(!is.na(ethnicity),
+                !is.na(gender)),
+       aes(x = sentiment,
+           group = ethnicity)) +
+  geom_density(aes(fill = ethnicity),
+               alpha = 0.6,
+               n = 10) +
+  theme_publication() +
+  facet_wrap(~gender)
+
 ```
 
 ## Health system building blocks 

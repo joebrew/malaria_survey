@@ -1,3 +1,6 @@
 /credentials
 credentials
 /snapshots
+/literature
+*.RData
+/data
