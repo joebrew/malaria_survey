@@ -174,6 +174,9 @@ if('pubmed_results.RData' %in% dir('../data')){
        file = '../data/pubmed_results.RData')
 }
 
+# Save the pubmed raw results for later
+pubmed_raw <- x$results
+
 if('final_authors.RData' %in% dir('../data')){
   load('../data/final_authors.RData')
 } else {
