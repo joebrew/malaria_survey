@@ -430,11 +430,13 @@ df$sex <- ifelse(df$proportion_female >= 0.5,
                         NA))
 
 # Bin the number of citations variable
+# options(scipen = '999')
 df$bin_citations <- 
   cut(x = df$n_citations_total,
       breaks = quantile(df$n_citations_total,
                na.rm = TRUE),
-      include.lowest = TRUE)
+      include.lowest = TRUE,
+      dig.lab = 10)
 
 # Remove the 1 "other" ethnicity since it screws up all our matrices
 df <- df %>%
@@ -458,7 +460,7 @@ ols1 = lm(years ~ sentiment  +
 # first equation is likelihood of response
 # second equation is impact on response
 formula_response <- as.formula("responded ~ sex + ethnicity + bin_citations")
-formula_years <- as.formula("years ~ #sentiment  + 
+formula_years <- as.formula("years ~  
                   ethnicity +
                   sex +
                   area_clinical_medicine +
@@ -480,7 +482,11 @@ heck1 <- heckit(formula_response,
 # ML estimation of selection model
 ml1 = selection(formula_response,
                 formula_years,
-                data = df)
+                data = df,
+                method = 'ml') # 2step or ml
+
+# Make tidy
+heckman <- summary(ml1)
 
 # # Look at results
 # stargazer(ols1, heck1, ml1,

@@ -36,7 +36,7 @@ output: rticles::elsevier_article
 
 ```{r, echo = FALSE, warning = FALSE, message = FALSE, comment = NA, error= FALSE, cache = F}
 # No scientific notation
-options(scipen=999)
+# options(scipen=999)
 
 # Packages (load child-specific packages in their respective files)
 library(knitr)
@@ -152,46 +152,140 @@ Ordinary least squares regression was employed to estimate the effect of area of
 
 Content analysis of free text comments was carried out using frequency analyses. Comments were categorized and coded according to (more details needed here).
 
-All analysis was carried out in R language [@R]. All analysis code, as well as the code used for the identification and contacting of participants, is publicly available at [https://github.com/joebrew/malaria_survey](https://github.com/joebrew/malaria_survey). 
-
-The searching and retrieval of information from the PubMed database was carried out using the RISmed package [@Kovalchik2015]. Qualitative analysis relied on the RQDA package (citation needed here). 
+All analysis was carried out in R language [@R]. All analysis code, as well as the code used for the identification and contacting of participants, is publicly available at [https://github.com/joebrew/malaria_survey](https://github.com/joebrew/malaria_survey). The searching and retrieval of information from the PubMed database was carried out using the RISmed package [@Kovalchik2015].
 
 The estimation of gender and ethnicity likelihoods for each participant relied on Mullen's implementation of US Social Security Administration names' analysis [@gender2015] and Khanna et al's bayesian prediction algorithm for the estimation of racial categories [@wru2015].
 
-De-biasing of sample selection was carried out using Heckman's 2 step approach (citation needed), as implemented by Toomet [@toomet2008].
+De-biasing of sample selection was carried out using Heckman's 2 step approach as implemented by Toomet [@toomet2008].
 
 # Results
 
-A total of `r nrow(df)` researchers participated in the survey.
+A total of `r length(which(df$responded))` researchers participated in the survey from the `r nrow(df)` invitations sent (participation rate of `r round(length(which(df$responded)) / nrow(df) * 100, 2)`%).
 
-## Sample selection and de-biasing of results
+## Sample selection 
 
-This section is unfinished. Below are regression outputs for both OLS and Heckman's 2 step model. I will update this soon.
+Respondents were qualitatively different from non-respondents. Importantly, the average number of total author-specific citations was `r round(mean(df$n_citations_total[df$responded]), digits = 2)` among respondents, but `r round(mean(df$n_citations_total[!df$responded]), digits = 2)` among non-respondents. This suggests either a tendency for more senior or more cited researchers to not respond. The distribution of author-specific total citations is shown below (a).
+
+```{r}
+g1 <- ggplot(data = df %>%
+         mutate(responded = ifelse(responded, 'Respondents', 'Non-respondents')), 
+       aes(x = n_citations_total)) +
+  geom_density(aes(group = responded,
+                   fill = responded),
+               alpha = 0.6) +
+  scale_x_log10() +
+  theme_publication() +
+  scale_fill_manual(name = '',
+                    values = c('darkorange', 'lightblue')) +
+  labs(x = 'Citations (log scale)',
+       y = 'Density',
+       title = 'Total lifetime citations')
+```
+
+When examining the number of average citations per article, the difference between respondents was slightly less: `r round(median(df$n_citations_total[df$responded]), digits = 2)` among respondents, and `r round(median(df$n_citations_total[!df$responded]), digits = 2)` among non-respondents. Again, the distribution is shown below (b). 
+
+```{r}
+g2 <- ggplot(data = df %>%
+         mutate(responded = ifelse(responded, 'Respondents', 'Non-respondents')), 
+       aes(x = n_citations_average)) +
+  geom_density(aes(group = responded,
+                   fill = responded),
+               alpha = 0.6,
+               n = 10) +
+  scale_x_log10() +
+  theme_publication() +
+  scale_fill_manual(name = '',
+                    values = c('darkorange', 'lightblue')) +
+  labs(x = 'Citations (log scale)',
+       y = 'Density',
+       title = 'Average citations per article')
+Rmisc::multiplot(g1, g2, cols = 2)
+```
+
+The below table shows the response rate by different demographic groups of interest.
+
+```{r}
+# function to get response rate per categorical variable
+response_rate <- function(variable = 'sex'){
+  df$x <- df[,variable]
+  out <- df %>%
+    group_by(x) %>%
+    summarise(responded = length(which(responded)),
+              n = n()) %>%
+    ungroup %>%
+    mutate(p = responded / n * 100)
+  return(out)
+}
+out_list <- list()
+vars <- c('sex',
+            'ethnicity',
+            'bin_citations')
+for (i in 1:length(vars)){
+  this_var <- vars[i]
+  x <- response_rate(variable = this_var)
+  x$variable <- this_var
+  out_list[[i]] <- x
+}
+out <- bind_rows(out_list) %>%
+  dplyr::select(variable, 
+                x,
+                responded,
+                n, 
+                p) %>%
+  rename(Variable = variable,
+         Characteristic = x,
+         Responded = responded,
+         Invited = n,
+         `Response rate` = p)
+kable(out, format = 'latex', caption = 'Response rate by author characteristics')
+```
+
+The below chart shows response rate by number of citations.
+
+```{r}
+x <- out %>%
+  filter(Variable == 'bin_citations') 
+ggplot(data = x,
+       aes(x = Characteristic,
+           y = `Response rate`)) +
+  geom_bar(stat = 'identity',
+           fill = 'lightblue',
+           alpha = 0.8) +
+  theme_publication() +
+  labs(x = 'Number of total citations',
+       y = 'Response rate',
+       title = 'Response rate by citations') +
+  geom_label(aes(label = paste0(round(`Response rate`, digits = 2), '%')))
+```
+
+## De-biasing of results
+
 
 ```{r, results = 'asis'}
 stargazer(ols1, heck1, ml1,
           header = FALSE,
           # se=list(cse(ols1),NULL,NULL),
           title="Regression on years until eradication", 
-          type="latex",
+          type="text",
           df=FALSE, digits=4)
 # summary(ols1)
 # summary(heck1)
 
 ```
 
-## Expertise profile
+## Expertise profile among respondents
 
 ```{r}
 x <- df %>%
+  filter(responded) %>%
   group_by(n_areas) %>%
   tally %>%
-  mutate(p = n / sum(n) * 100)
+  mutate(p = n / sum(n, na.rm = TRUE) * 100)
 ```
 
 Areas of expertise were non-exclusive and self-described, with participants having the option to choose from up to 3 of 10 checkboxes\footnote{Checkbox categories were anthropology, biology, clinical medicine, economics, epidemiology, immunology, parasitology, political science, statistics, and virology.}, or to write in one or more "other" areas of expertise. `r x$n[1]` participants (`r round(x$p[1], digits = 1)`%) declared only one area of expertise, with `r sum(x$n[1:3])` (`r round(sum(x$p[1:3]), digits = 1)`%) declaring three or fewer.
 
-Participants had a total of `r length(old_areas)` unique (self-described) areas of expertise, of which `r length(areas)` areas of expertise had 5 or more participants. 
+Participants had a total of `r length(old_areas)` unique (self-described) areas of expertise, of which `r length(areas)` areas of expertise had 5 or more participants (see table 1).
 
 ```{r}
 temp <- areas_df %>%
@@ -200,7 +294,9 @@ temp$area <- trimws(temp$area, which = 'both')
 names(temp) <- c('Area', 'Researchers')
 temp$Area <- as.character(temp$Area)
 temp$Area <- Hmisc::capitalize(temp$Area)
-kable(temp)
+kable(temp[1:10,], format = "latex", caption = 'Top 10 areas') %>%
+  kableExtra::kable_styling(#position = "float_right",
+                            font_size = 7)
 ```
 
 
@@ -504,6 +600,10 @@ ggplot(data = results) +
              color = 'black',
              alpha = 0.8)
 ```
+
+## Qualitative analysis of results
+
+Participants were invited to provide "any general comments on the timeline and likelihood of global eradication". Of the `r length(which(df$responded))` who responded to the survey, `r length(which(!is.na(df$comments)))` (`r round(length(which(!is.na(df$comments))) / length(which(df$responded)) * 100, digits = 2)`%) provided a comment.
 
 # Discussion
 
