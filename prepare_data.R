@@ -130,6 +130,7 @@ df$area[df$area == 'vector biology'] <- 'biology'
 areas <- tolower(paste0(sort(unique(df$area)), collapse = ', '))
 areas <- sort(unique(unlist(strsplit(x = areas, split = ','))))
 areas <- trimws(areas, which = 'both')
+areas <- sort(unique(areas))
 old_areas <- areas
 
 # Remove those areas for which there are fewer than 5 of a kind
@@ -271,7 +272,26 @@ df <-
          n_citations_average = ifelse(is.na(n_citations_average), 0, 
                                       n_citations_average))
 
-# Predict the gender based on first name ####
+# Make a numeric version of the probabilities
+prob_cols <- paste0('years_', seq(10, 50, 10))
+for (j in 1:length(prob_cols)){
+  old_name <- prob_cols[j]
+  new_name <- paste0(old_name, '_numeric')
+  var <- df[,old_name]
+  converted <- ifelse(var == '0%', 0,
+                      ifelse(var == '1-20%',
+                             10,
+                             ifelse(var == '21-40%',
+                                    30,
+                                    ifelse(var == '41-60%', 
+                                           50,
+                                           ifelse(var == '61-80%',
+                                                  70,
+                                                  ifelse(var == '81-99%',
+                                                         90,
+                                                         ifelse(var == '100%', 100, NA)))))))
+  df[,new_name] <- converted
+}
 
 # Extract first/last names
 df$first_name <- tolower(unlist(lapply(strsplit(df$name, ' '), function(x){x[1]})))
@@ -444,8 +464,7 @@ df <- df %>%
 
 # Heckman selection
 # We're estimating years as a function of sex and ethnicity
-ols1 = lm(years ~ sentiment  + 
-            ethnicity +
+ols1 = lm(years ~ ethnicity +
             sex +
             # area_anthropology +
             bin_citations, data = df[df$responded,])
@@ -459,18 +478,27 @@ ols1 = lm(years ~ sentiment  +
 # Heckman 2 step
 # first equation is likelihood of response
 # second equation is impact on response
-formula_response <- as.formula("responded ~ sex + ethnicity + bin_citations")
-formula_years <- as.formula("years ~  
+formula_response <- as.formula('responded ~ bin_citations')
+formula_years <- as.formula("years ~
                   ethnicity +
                   sex +
                   area_clinical_medicine +
-                  area_biology + 
+                  area_biology +
                   area_epidemiology +
                   area_it +
                   bin_citations")
-heck1 <- heckit(formula_response,
-                formula_years,
-                data = df)
+heck1 <- selection(formula_response, formula_years, data = df)
+for (i in seq(10, 50, 10)){
+  assign(paste0('formula_years_', i),
+         as.formula(paste0('years_',
+                           i,
+                           '_numeric ~ 1')))
+  assign(paste0('heck_', i),
+         heckit(formula_response,
+                get(paste0('formula_years_', i)),
+                data = df,
+                method = '2step')
+         )}
 
 # # See which dummies to use
 # dummies <- names(df)[grepl('area_', names(df))]
@@ -480,13 +508,13 @@ heck1 <- heckit(formula_response,
 # }
 # Maximum likelihood (like heckman 2 step, but slightly different)
 # ML estimation of selection model
-ml1 = selection(formula_response,
-                formula_years,
-                data = df,
-                method = 'ml') # 2step or ml
+# ml1 = selection(formula_response,
+#                 formula_years,
+#                 data = df,
+#                 method = 'ml') # 2step or ml
 
 # Make tidy
-heckman <- summary(ml1)
+# heckman <- summary(ml1)
 
 # # Look at results
 # stargazer(ols1, heck1, ml1,
@@ -494,3 +522,40 @@ heckman <- summary(ml1)
 #           title="Regression on years until eradication", type="latex",
 #           df=FALSE, digits=4)
 
+
+# Compare Heckman vs. unadjusted outputs
+heckman <- expand.grid(key = c('Heckman', 'Unadjusted'),
+                       years = seq(10, 50, 10),
+                       value = NA)
+for (i in 1:nrow(heckman)){
+  key <- heckman$key[i]
+  years <- heckman$years[i]
+  val <- mean(df[,paste0('years_', years, '_numeric')], na.rm = TRUE)
+  val <- this_model$coefficients[intercept_index]
+  if(key == 'Unadjusted'){
+    heckman$value[i] <- val
+  } else {
+    this_model <- get(paste0('heck_', years))
+    intercept_indices <- which(names(this_model$coefficients) == '(Intercept)')
+    intercept_index <- intercept_indices[2]
+    intercept <- this_model$coefficients[intercept_index]
+    # Get inverse mills ratio
+    imr <- this_model$coefficients['invMillsRatio']
+    # so as to calculate average truncation effect: 
+    # lambda×[average mills value] 
+    heckman$value[i] <- intercept + imr
+  }
+}
+
+ggplot(data = heckman,
+       aes(x = years,
+           y = value,
+           color = key,
+           lty = key)) +
+  geom_line() +
+  geom_point() +
+  theme_publication() +
+  labs(x = 'Years',
+       y = 'Likelihood of eradication') +
+  scale_linetype_manual(name = '', values = 1:2) +
+  scale_color_manual(name = '', values = c('black', 'purple'))

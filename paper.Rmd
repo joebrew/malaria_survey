@@ -79,11 +79,11 @@ However, no such position has been taken. This omission is likely intentional, a
 
 But just how close are we to eradication? The objective serves to inspire, rally funder support, motivate researchers, and focus the efforts of public health practitioners. Proponents of disease eradication point to the success of historical and current campaigns (smallpox and polio, respectively), and highlight the benefits in health and wealth to future generations. However, the opportunity cost of investments in eradication-specific interventions can be high. And the “expected value” of an investment in a binary scenario (eradication or not) is a function of the probability of the scenario’s occurrence, and the temporal lag of that occurrence. Therefore, knowing the likelihood and time frame of eradication of malaria is essential for making sound investments in health. 
 
-## The need for the wisdom of crowds
+## The need for a broad concensus
 
 Patients often ask for a “second opinion”, a request which implicitly recognizes two important truths: (1) that an expert can sometimes be wrong and (2) that the combined opinions of multiple people can better approximate the truth than the opinion of only one. As Sir Francis Galton demonstrated in his famous ox-weight experiment [@Wallis2014], averaging the opinions of many can be more accurate than taking the opinion of any single expert, since the biases of diverse viewpoints can be complementary and symbiotic. 
 
-Additionally, one could argue that assessing likelihood and time frame of eradication is too important, subjective and complex a task to be left to only powerful individuals or small panels and committees. It requires the “wisdom of crowds.” Measuring consensus and discord among disease-specific researchers from a variety of disciplines can serve as a barometer of (informed) opinion, both guiding resources and identifying areas of concern [@Keenan2013].
+Additionally, one could argue that assessing likelihood and time frame of eradication is too important, subjective and complex a task to be left to only powerful individuals or small panels and committees. It requires the aggregation of multiple points of view. Measuring consensus and discord among disease-specific researchers from a variety of disciplines can serve as a barometer of (informed) opinion, both guiding resources and identifying areas of concern [@Keenan2013].
 
 ## Rationale
 
@@ -261,15 +261,15 @@ ggplot(data = x,
 ## De-biasing of results
 
 
-```{r, results = 'asis'}
-stargazer(ols1, heck1, ml1,
-          header = FALSE,
-          # se=list(cse(ols1),NULL,NULL),
-          title="Regression on years until eradication", 
-          type="text",
-          df=FALSE, digits=4)
-# summary(ols1)
-# summary(heck1)
+```{r, results = 'markup'}
+# stargazer(ols1, heck1, ml1,
+#           header = FALSE,
+#           # se=list(cse(ols1),NULL,NULL),
+#           title="Regression on years until eradication", 
+#           type="text",
+#           df=FALSE, digits=4)
+# # summary(ols1)
+# # summary(heck1)
 
 ```
 
@@ -308,6 +308,7 @@ Participants were asked to quantify (as a percentage) the likelihood of eradicat
 # Define function for analyzing the years_n columns
 years_n <- function(n){
   x <- df %>%
+    filter(responded) %>%
     dplyr::select_(paste0('years_', n)) 
   names(x) <- 'likelihood'
   result <- x %>%
@@ -409,9 +410,8 @@ Participants were heterogenous in their perceptions, with all of the 5 pre-deter
 results_list <- list()
 dist_list <- list()
 year_list <- list()
-
-small_areas <- areas_df$area[areas_df$count >= 15]
-small_areas <- areas[1:12]
+areas_df <- areas_df %>% arrange(desc(count))
+small_areas <- areas_df$area[1:12]
 for (i in 1:length(small_areas)){
   this_area <- small_areas[i]
   sub_data <- df[df[,paste0('area_', gsub(' ', '_', this_area))],]
@@ -598,7 +598,9 @@ ggplot(data = results) +
              size = 5,
              pch = 17,
              color = 'black',
-             alpha = 0.8)
+             alpha = 0.8) +
+  ylim(0, 6)
+ggsave('~/Desktop/figure2.png', height = 4, width = 5.5)
 ```
 
 ## Qualitative analysis of results
