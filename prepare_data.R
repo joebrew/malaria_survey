@@ -12,6 +12,7 @@ library(gender)
 library(wru)
 library(sampleSelection)
 library(stargazer)
+library(nnet)
 
 # Get publication theme for charts
 source('theme_publication.R')
@@ -243,8 +244,8 @@ bb <- c('governance', 'health_workforce',
         'health_information', 'service_delivery')
 for (i in 1:nrow(df)){
   sub_df <- df[i,bb]
-  new_values <- sub_df / sum(sub_df, na.rm = TRUE) * 21
-  new_values[new_values > 6] <- 6
+  new_values <- sub_df / sum(sub_df, na.rm = TRUE) * 100
+  # new_values[new_values > 6] <- 6
   df[i,bb] <- new_values
 }
 
@@ -462,23 +463,46 @@ df$bin_citations <-
 df <- df %>%
   filter(ethnicity != 'other')
 
+# See if men and women have different pessimism scores
+
+sig <- data.frame(expand.grid(years = rep(seq(10, 50, 10), each = 6),
+                              p = NA))
+for (i in seq(10, 50, 10)){
+  suppressMessages(test <- multinom(as.formula(paste0('years_', i, ' ~ sex')), data = df))
+  z <- summary(test)$coefficients/summary(test)$standard.errors
+  p <- (1 - pnorm(abs(z), 0, 1))*2
+  p <- p[,2]
+  sig$p[sig$years == i] <- p
+}
+if(all(sig$p > 0.05)){
+  message('No significant difference between men and womens optimism')
+} else {
+  message('Men and women are significantly different re: optimism')
+}
+sig_respond <- glm(responded ~ sex, data = df, family = binomial('logit'))
+summary(sig_respond)
+if(broom::tidy(sig_respond)$p.value[2] <= 0.05){
+  message('Men and women have different response rates')
+} else {
+  message('Men and women have similar response rates')
+}
 # Heckman selection
-# We're estimating years as a function of sex and ethnicity
-ols1 = lm(years ~ ethnicity +
-            sex +
-            # area_anthropology +
-            bin_citations, data = df[df$responded,])
+# # We're estimating years as a function of sex and ethnicity
+# ols1 = lm(years ~ ethnicity +
+#             sex +
+#             # area_anthropology +
+#             bin_citations, data = df[df$responded,])
 
 # Estimate likelihood of response
 # it is very desirable to have at least one variable in the selection equation that acts like an instrument:
 # (https://rpubs.com/wsundstrom/t_selection)
-# for us, this is ethnicity - it should affect response (due to language)
+# for us, this is sex - it should affect response 
 # but not likely to affect optimism
 
 # Heckman 2 step
 # first equation is likelihood of response
 # second equation is impact on response
-formula_response <- as.formula('responded ~ bin_citations')
+formula_response <- as.formula('responded ~ bin_citations + sex')
 formula_years <- as.formula("years ~
                   ethnicity +
                   sex +
@@ -487,12 +511,12 @@ formula_years <- as.formula("years ~
                   area_epidemiology +
                   area_it +
                   bin_citations")
-heck1 <- selection(formula_response, formula_years, data = df)
+# heck1 <- selection(formula_response, formula_years, data = df)
 for (i in seq(10, 50, 10)){
   assign(paste0('formula_years_', i),
          as.formula(paste0('years_',
                            i,
-                           '_numeric ~ 1')))
+                           '_numeric ~ sex')))
   assign(paste0('heck_', i),
          heckit(formula_response,
                 get(paste0('formula_years_', i)),
@@ -531,13 +555,14 @@ for (i in 1:nrow(heckman)){
   key <- heckman$key[i]
   years <- heckman$years[i]
   val <- mean(df[,paste0('years_', years, '_numeric')], na.rm = TRUE)
+  this_model <- get(paste0('heck_', years))
+  intercept_indices <- which(names(this_model$coefficients) == '(Intercept)')
+  intercept_index <- intercept_indices[2]
   val <- this_model$coefficients[intercept_index]
   if(key == 'Unadjusted'){
     heckman$value[i] <- val
   } else {
-    this_model <- get(paste0('heck_', years))
-    intercept_indices <- which(names(this_model$coefficients) == '(Intercept)')
-    intercept_index <- intercept_indices[2]
+
     intercept <- this_model$coefficients[intercept_index]
     # Get inverse mills ratio
     imr <- this_model$coefficients['invMillsRatio']
@@ -546,16 +571,17 @@ for (i in 1:nrow(heckman)){
     heckman$value[i] <- intercept + imr
   }
 }
-
-ggplot(data = heckman,
-       aes(x = years,
-           y = value,
-           color = key,
-           lty = key)) +
-  geom_line() +
-  geom_point() +
-  theme_publication() +
-  labs(x = 'Years',
-       y = 'Likelihood of eradication') +
-  scale_linetype_manual(name = '', values = 1:2) +
-  scale_color_manual(name = '', values = c('black', 'purple'))
+# 
+# ggplot(data = heckman,
+#        aes(x = years,
+#            y = value,
+#            color = key,
+#            lty = key)) +
+#   geom_line(alpha = 0.8) +
+#   geom_point(alpha = 0.6) +
+#   theme_black() +
+#   labs(x = 'Years',
+#        y = 'Likelihood of eradication') +
+#   scale_linetype_manual(name = '', values = 1:2) +
+#   scale_color_manual(name = '', values = c('white', 'darkorange')) +
+#   labs(title = 'Heckman selection adjustment')

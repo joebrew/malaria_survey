@@ -32,6 +32,7 @@ bibliography: library.bib
 params:
   get_new_data: False
 output: rticles::elsevier_article
+preprint: false
 ---
 
 ```{r, echo = FALSE, warning = FALSE, message = FALSE, comment = NA, error= FALSE, cache = F}
@@ -54,7 +55,7 @@ options(xtable.comment = FALSE)
 
 
 # Get data
-source('prepare_data.R')
+source('prepare_data.R', echo = FALSE)
 ```
 
 
@@ -262,14 +263,21 @@ ggplot(data = x,
 
 
 ```{r, results = 'markup'}
-# stargazer(ols1, heck1, ml1,
-#           header = FALSE,
-#           # se=list(cse(ols1),NULL,NULL),
-#           title="Regression on years until eradication", 
-#           type="text",
-#           df=FALSE, digits=4)
-# # summary(ols1)
-# # summary(heck1)
+
+ggplot(data = heckman,
+       aes(x = years,
+           y = value,
+           color = key,
+           lty = key)) +
+  geom_line(alpha = 0.8) +
+  geom_point(alpha = 0.6) +
+  theme_black() +
+  labs(x = 'Years',
+       y = 'Likelihood of eradication') +
+  scale_linetype_manual(name = '', values = 1:2) +
+  scale_color_manual(name = '', values = c('white', 'darkorange')) +
+  labs(title = 'Heckman selection adjustment')
+
 
 ```
 
@@ -575,32 +583,46 @@ results_agg$bb <- factor(results_agg$bb,
 results$bb <- factor(results$bb, 
                      levels = levels(results_agg$bb))
 
-ggplot(data = results) + 
-  geom_violin(aes(x = bb,
-           y = ranking),
-           fill = 'orange',
-              alpha = 0.6) +
-  geom_jitter(aes(x = bb,
-           y = ranking),
-           color = 'black',
-           with = 0.4,
-           height = 0.4,
-              alpha = 0.3,
-              size = 1) +
-  theme_publication(base_size = 10) +
-  labs(x = 'WHO Building block',
-       y = 'Ranking',
-       title = 'Perceived areas needing attention',
-       subtitle = 'Small points: jittered individual responses; large triangles: averages') +
-  geom_point(data = results_agg,
-             aes(x = bb,
-                 y = avg),
-             size = 5,
-             pch = 17,
-             color = 'black',
-             alpha = 0.8) +
-  ylim(0, 6)
-ggsave('~/Desktop/figure2.png', height = 4, width = 5.5)
+library(ggridges)
+ggplot(data = results %>% filter(!is.na(ranking)),
+       aes(x = ranking,
+           y = bb,
+           fill = bb)) +
+  geom_density_ridges(#fill = 'darkorange',
+                      alpha = 0.6,
+                      scale = 1.5) +
+  theme_black() +
+  xlim(0,30) +
+  labs(x = 'Perceived importance',
+       y = 'WHO Building Block') +
+ scale_fill_cyclical(values = c("darkorange", "yellow"))
+
+
+# ggplot(data = results) + 
+#   geom_violin(aes(x = bb,
+#            y = ranking),
+#            fill = 'orange',
+#               alpha = 0.6) +
+#   geom_jitter(aes(x = bb,
+#            y = ranking),
+#            color = 'black',
+#            with = 0.4,
+#            height = 0.4,
+#               alpha = 0.3,
+#               size = 1) +
+#   theme_publication(base_size = 10) +
+#   labs(x = 'WHO Building block',
+#        y = 'Ranking',
+#        title = 'Perceived areas needing attention',
+#        subtitle = 'Small points: jittered individual responses; large triangles: averages') +
+#   geom_point(data = results_agg,
+#              aes(x = bb,
+#                  y = avg),
+#              size = 5,
+#              pch = 17,
+#              color = 'black',
+#              alpha = 0.8) +
+#   ylim(0, 6)
 ```
 
 ## Qualitative analysis of results
