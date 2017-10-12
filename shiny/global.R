@@ -62,6 +62,17 @@ df <- gs_read_csv(sheet)
 names(df) <- c('timestamp', 'years', 'sex',
                'height', 'sleep', 'age')
 
+df$date <- as.Date(substr(df$timestamp, 1, 10), format = '%m/%d/%Y')
+if(max(df$date, na.rm = TRUE) == '2017-10-05'){
+  fake_data <- TRUE
+} else {
+  fake_data <- FALSE
+}
+
+if(!fake_data){
+  df <- df %>% filter(date > '2017-10-05')
+}
+
 # Make sure variables are classified as needed
 make_numeric <- function(x){as.numeric(as.character(x))}
 df <- 

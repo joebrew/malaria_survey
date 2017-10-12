@@ -18,7 +18,8 @@ dashboardPage(
       box(plotOutput("p2", height = 250)),
       valueBoxOutput('v1'),
       valueBoxOutput('v2'),
-      valueBoxOutput('v3')
+      valueBoxOutput('v3'),
+      textOutput('t1')
     )
   )
 )
