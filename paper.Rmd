@@ -256,9 +256,10 @@ temp$area <- trimws(temp$area, which = 'both')
 names(temp) <- c('Area', 'Researchers')
 temp$Area <- as.character(temp$Area)
 temp$Area <- Hmisc::capitalize(temp$Area)
-kable(temp[1:10,], format = "latex", caption = 'Top 10 areas') %>%
-  kableExtra::kable_styling(#position = "float_right",
-                            font_size = 7)
+kable(temp[1:10,], #format = "latex", 
+      caption = 'Top 10 areas') #%>%
+  # kableExtra::kable_styling(#position = "float_right",
+  #                           font_size = 7)
 ```
 
 
@@ -400,7 +401,9 @@ out <- bind_rows(out_list) %>%
          Responded = responded,
          Invited = n,
          `Response rate` = p)
-knitr::kable(out, format = 'latex', caption = 'Response rate by author characteristics')
+knitr::kable(out, 
+             # format = 'latex', 
+             caption = 'Response rate by author characteristics')
 ```
 
 Selection bias is not of concern in the case of differential response if the groups for whom there are differences are not different in terms of the outcome variable. This was the case for sex: males responded at a significantly greater rate than females (p < 0.001), but were not statistically significantly different in regards to pessimism/optimism (ie, time frame or likelihood of eradication). In the case of researcher impact (as measured by the total number of citations), selection bias plays an important role: being highly-cited was associated both with eradication "pessimism" as well as likelihood of non-response. In other words, our pool of respondents was less highly-cited than our pool of invitees, and among respondents, those who were highly-cited tended to be more pessimistic (see below figure).
@@ -598,16 +601,22 @@ ggplot(data = results %>% filter(!is.na(ranking)),
 
 ## Qualitative analysis of results
 
-Participants were invited to provide "any general comments on the timeline and likelihood of global eradication". Of the `r length(which(df$responded))` who responded to the survey, `r length(which(!is.na(df$comments)))` (`r round(length(which(!is.na(df$comments))) / length(which(df$responded)) * 100, digits = 2)`%) provided a comment. Thematic content analysis [@Vaismoradi_2016] was employed to code responses into four subject themes as well as binary categorization of descriptive vs. presciptive. 
+Participants were invited to provide "any general comments on the timeline and likelihood of global eradication". Of the `r length(which(df$responded))` who responded to the survey, `r length(which(!is.na(df$comments)))` (`r round(length(which(!is.na(df$comments))) / length(which(df$responded)) * 100, digits = 2)`%) provided a comment. Thematic content analysis [@Vaismoradi_2016] was employed to code responses into four subject themes as well as the binary categorization of descriptive vs. presciptive. 
 
 The four subject themes, identified and refined through iterative analysis, were:
 
-1. Innovation
-2. Systematic challenges  
-3. Poverty
-4. Meta: challenging the question, re-framing the goal, insisting on other priorities, etc.
+1. Innovation: comments pertaining to new tools, drugs, methods, or strategies required to achieve eradication.
+2. Systematic challenges: comments pertaining to political, social, environmental or logistical issues related to eradication.  
+3. Poverty: comments specifically related to the economic and socieconomic components of malaria eradication.
+4. Meta: challenging the question of eradication itself, re-framing the goal, insisting on other priorities, etc.
 
+In regards to **innovation**, comments largely pertained to the necessity of further technological advances. One participant wrote that "currently available technology can't achieve [eradication], even if delivered optimally"; another argued that eradication could not be achieved without a "game-changing innovation", whereas two others referred to the need for "transformative" technologies. Many noted the need to "overcome the challenge of drug resistance" and develop better vaccines. Genetic engineering was mentioned by several commenters. Most comments coded as "innovatation" were presciptive in nature, often suggesting the nature of the needed innovation, with a heavy slant towards pharmaceutical options and vaccination.
 
+**Systematic challenges** to malaria eradication were noted by the majority of commenters. In direct contrast to the previous comments, one participant stated that "we already have the tools to achieve  eradication" and that the only piece lacking was "robust health systems". Others echoed the sentiment, with many comments focusing on the need of strong surveillance and treatment delivery systems. Many commenters focused on the reasons for stagnating progress, such as "weak or failing health systems...due to political unwillingness or conflict". Others highlighted the inherent challenges in the epidemiology of malaria, such as the changing dynamics of malaria transmission, the resilience of the parasite and vector, climate change, and the inability to aim interventions accurately with an "ever-moving target". Comments coded as "systematic" tended to be descriptive and slightly more pessimistic than others.
+
+**Poverty** was assigned its own category in the codification of free text responses because of its ubiquity as a theme in comments. Many noted that malaria is a "disease of poverty", with "social injustice" as the root cause. Some made the sequential argument that "eradication of poverty" must preceed disease eradication. Along the same lines, one commenter said that eradication requires "a full systems-wide approach, not a disease-specific approach. The eradication of smallpox was a triumph of management, not medicine or technology." Another noted that the survey "left off the list the most important factor - economic development". Many echoed the sentiment, stating that "with no economic development, you cannot have eradication" and that poverty is the "cause" of malaria. As with the "systematic challenges" of eradication, comments which were coded as poverty tended to be descriptive rather than prescriptive.
+
+**Meta** arguments were rarer than the other categories, but cohesive and consistent. One commenter wrote that eradication is a "postwar" idea that developed from the "abandonment of a broad sociopolitical understanding of the causes of disease, and the emphasis on technological solutions." Many stated that global malaria eradication was simply not possible, and 2 argued that it may not be desirable or ethical. One stated that the concept was "absurd" and that "I'm not even sure why people talk about it". Several pointed to the failure of the WHO GMP in the 1950s as evidence of the futile nature of eradication programs. Many highlighted that talking about "malaria" as one disease misses the mark, since the different species of parasite and contexts in which they live make elimination in each area very distinct from other areas. "Meta" comments tended to be skeptical of the feasibility of eradication, or to challenge the  notion that it is a meaningful or useful endeavor. Largely, they were prescriptive, advocating for a re-framing of the conversation so that the focus was not on an "arbitrary" goal like eradication, but rather on scaling up control and making region-specific progress.
 
 # Discussion
 
@@ -650,144 +659,3 @@ Our survey attempted to quantify the likelihood of and time frame to malaria era
 References {#references .unnumbered}
 ==========
 
-# Appendix
-
-The distribution of author-specific total citations is shown below (a).
-
-```{r}
-g1 <- ggplot(data = df %>%
-         mutate(responded = ifelse(responded, 'Respondents', 'Non-respondents')), 
-       aes(x = n_citations_total)) +
-  geom_density(aes(group = responded,
-                   fill = responded),
-               alpha = 0.6) +
-  scale_x_log10() +
-  theme_paper() +
-  scale_fill_manual(name = '',
-                    values = c('darkorange', 'lightblue')) +
-  labs(x = 'Citations (log scale)',
-       y = 'Density',
-       title = 'Total lifetime citations')
-```
-
-Again, the distribution is shown below (b). 
-
-```{r}
-g2 <- ggplot(data = df %>%
-         mutate(responded = ifelse(responded, 'Respondents', 'Non-respondents')), 
-       aes(x = n_citations_average)) +
-  geom_density(aes(group = responded,
-                   fill = responded),
-               alpha = 0.6,
-               n = 10) +
-  scale_x_log10() +
-  theme_paper() +
-  scale_fill_manual(name = '',
-                    values = c('darkorange', 'lightblue')) +
-  labs(x = 'Citations (log scale)',
-       y = 'Density',
-       title = 'Average citations per article')
-# Rmisc::multiplot(g1, g2, cols = 2)
-g1
-g2
-```
-
-```{r, fig.height = 4.5, fig.width = 4.5}
-# Get averages per area
-results_list <- list()
-dist_list <- list()
-year_list <- list()
-areas_df <- areas_df %>% arrange(desc(count))
-small_areas <- areas_df$area[1:12]
-for (i in 1:length(small_areas)){
-  this_area <- small_areas[i]
-  sub_data <- df[df[,paste0('area_', gsub(' ', '_', this_area))],]
-  this_df <- data_frame(area = this_area,
-                        avg = mean(sub_data$years, na.rm = TRUE),
-                        med = median(sub_data$years, na.rm = TRUE))
-  dist_df <- data_frame(area = this_area,
-                        val = sub_data$years)
-  numberfy <- function(x){
-    ifelse(x == '0%', 0,
-                ifelse(x == '1-20%', 10,
-                       ifelse(x == '21-40%', 30,
-                              ifelse(x == '41-60%', 50,
-                                     ifelse(x == '61-80%', 70,
-                                            ifelse(x == '81-99%', 90,
-                                                   ifelse(x == '100%', 100, NA)))))))
-    
-  }
-  year_df <- data.frame(area = this_area,
-                        year = seq(10, 50, 10),
-                        val = c(mean(numberfy(sub_data$years_10), na.rm = TRUE),
-                                mean(numberfy(sub_data$years_20), na.rm = TRUE),
-                                mean(numberfy(sub_data$years_30), na.rm = TRUE),
-                                mean(numberfy(sub_data$years_40), na.rm = TRUE),
-                                mean(numberfy(sub_data$years_50), na.rm = TRUE)))
-  for (q in seq(0, 100, 10)){
-    this_df[,paste0('q_', q)] <- 
-      quantile(sub_data$years, q / 100, na.rm = TRUE)
-  }
-  results_list[[i]] <- this_df
-  dist_list[[i]] <- dist_df
-  year_list[[i]] <- year_df
-}
-results <- bind_rows(results_list)
-dist_results <- bind_rows(dist_list)
-year_results <- bind_rows(year_list)
-dist_results$the_area <- dist_results$area
-
-ggplot(data = dist_results,
-       aes(#group = area,
-           #fill = area,
-           x = val)) +
-  geom_density(fill = 'darkorange',
-               alpha = 0.6) +
-  theme_paper(base_size = 10) +
-  labs(x = 'Years',
-       y = 'Density',
-       title = 'Perceived years to eradication',
-       subtitle = '12 most popular areas of expertise only') +
-  facet_wrap(~the_area) 
-```
-
-
-Heterogeneity by area of expertise is also apparent in perceived likelihood of eradication over the pre-defined five time-points, as seen below.
-
-```{r, fig.height = 4, fig.width = 4.5}
-cols <- colorRampPalette(brewer.pal(9, 'Spectral'))(length(unique(year_results$area)))
-ggplot(data = year_results,
-       aes(x = year,
-           y = val)) +
-  geom_line(aes(group = area,
-           color = area,
-           lty = area)) +
-  theme_paper(base_size = 10) +
-  scale_color_manual(name = '',
-                     values = cols,
-                     labels = unique(year_results$area)) +
-  scale_linetype_manual(name="", 
-                        values = rep(1:6, 100)[1:length(unique(year_results$area))],
-                     labels = unique(year_results$area)) +
-  xlab('Years until eradication') +
-  ylab('Likelihood') +
-  ggtitle('Likelihood trajectories',
-          'By area of expertise')
-```
-
-
-```{r}
-ggplot(data = df %>%
-         filter(responded) %>%
-         # mutate(n_areas = factor(n_areas)) %>%
-         filter(!is.na(ethnicity),
-                !is.na(gender)),
-       aes(x = sentiment,
-           group = ethnicity)) +
-  geom_density(aes(fill = ethnicity),
-               alpha = 0.6,
-               n = 10) +
-  theme_paper() +
-  facet_wrap(~gender)
-
-```
