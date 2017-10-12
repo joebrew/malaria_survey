@@ -1,6 +1,6 @@
 # https://rpubs.com/Koundy/71792
 
-theme_publication <- function(base_size=14) {
+theme_publication <- function(base_size=9) {
   library(grid)
   library(ggthemes)
   (theme_foundation(base_size=base_size)
@@ -76,11 +76,11 @@ theme_black = function(base_size = 12, base_family = "") {
       # Specify panel options
       panel.background = element_rect(fill = "black", color  =  NA),  
       panel.border = element_rect(fill = NA, color = "white"),  
-      panel.grid.major = element_line(color = "grey35"),  
-      panel.grid.minor = element_line(color = "grey20"),  
+      panel.grid.major = element_line(color = "black"),  
+      panel.grid.minor = element_line(color = "black"),  
       panel.margin = unit(0.5, "lines"),   
       # Specify facetting options
-      strip.background = element_rect(fill = "grey30", color = "grey10"),  
+      strip.background = element_rect(fill = "black", color = "black"),  
       strip.text.x = element_text(size = base_size*0.8, color = "white"),  
       strip.text.y = element_text(size = base_size*0.8, color = "white",angle = -90),  
       # Specify plot options

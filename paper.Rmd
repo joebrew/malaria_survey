@@ -1,39 +1,12 @@
 ---
 title: Silent pessimists - researchers' perceptions of malaria eradication and implications for health spending
-author:
-  - name: Joe Brew
-    email: joebrew@economicsofmalaria.com
-    affiliation: isglobal,cism
-    footnote: Corresponding Author
-  - name: Menno Pradhan
-    email: m.p.pradhan@vu.nl
-    affiliation: vu,uva
-  - name: Jacqueline Broerse
-    email: j.e.w.broerse@vu.nl
-    affiliation: vu
-  - name: Elisa Sicuri
-    email: elisa.sicuri@isglobal.org 
-    affiliation: isglobal,icl,cism
-address:
-  - code: isglobal
-    address: Barcelona Institute for Global Health, c/ Rosselló, 132, 5è 2a. 08036, Barcelona, Spain
-  - code: icl
-    address: Imperial College London, South Kensington Campus, London SW7 2AZ, U.K.
-  - code: cism
-    address: Centro de Investigação em Saúde de Manhiça, Vila da Manhiça, Bairro Cambeve, Rua 12, Distrito da Manhiça, CP 1929, Maputo, Mozambique
-  - code: vu
-    address: Faculty of Economics and Business Administration, VU University Amsterdam, De Boelelaan 1105, 1081 HV Amsterdam, Netherlands
-  - code: uva
-    address: Faculty of Economics and Business, Section Microeconomics, University of Amsterdam, REC E, Roetersstraat 11, Amsterdam, Netherlands
-abstract: |
-  Quantifying an event's probability and time frame is essential for calculating its expected value. In the case of global malaria eradication, uncertainty regarding feasibility makes it difficult for policymakers and public health practitioners to make fully informed decisions. The opportunity cost of investments in eradication-specific interventions can be high, particularly in contexts with other urgent health priorities. In a systematic survey of malaria researchers, we query perceptions regarding the likelihood and time frame of eradication, as well as the perceived chief areas needed for improvement in order for eradication to be achieved. We assess pessimism/optimism (via the proxy of years-to-eradication), broken down by area of expertise. Our results, which suggest a disconnect between public institutional discourse and private opinion, serve as a barometer of professional perspectives, and serve to highlight areas where attention is most needed for eradication to be achieved.
-  
 bibliography: library.bib
-params:
-  get_new_data: False
-output: rticles::elsevier_article
-preprint: false
+output: 
+  pdf_document:
+    includes:
+      in_header: preamble.sty
 ---
+
 
 ```{r, echo = FALSE, warning = FALSE, message = FALSE, comment = NA, error= FALSE, cache = F}
 # No scientific notation
@@ -53,11 +26,110 @@ opts_chunk$set(comment = NA,
                fig.align = 'center')
 options(xtable.comment = FALSE)
 
-
 # Get data
 source('prepare_data.R', echo = FALSE)
+
+theme_paper <- theme_publication
 ```
 
+
+```{r}
+authors <- data.frame(name = c('Joe Brew',
+                               'Menno Pradhan',
+                               'Jacqueline Broerse',
+                               'Elisa Sicuri'),
+                      email = c('joe@databrew.cc',
+                                'm.p.pradhan@vu.nl',
+                                'j.e.w.broerse@vu.nl',
+                                'elisa.sicuri@isglobal.org'),
+                      affilitation = c("isglobal,cism,vu",
+                                       "vu,uva",
+                                       "vu",
+                                       "isglobal,icl,cism"),
+                      footnote = c("Corresponding Author",
+                                   rep('', 3)),
+                      stringsAsFactors = FALSE)
+institutions <- data.frame(code = c('isglobal',
+                                    'icl',
+                                    'cism',
+                                    'vu',
+                                    'uva'),
+                           institution = c('Barcelona Institute for Global Health',
+                                           'Imperial College London',
+                                           'Centro de Investigação em Saúde de Manhiça',
+                                           'VU University Amsterdam',
+                                           'University of Amsterdam'),
+                           address = c('c/ Rosselló, 132, 5è 2a. 08036, Barcelona, Spain',
+                                       'South Kensington Campus, London SW7 2AZ, U.K.',
+                                       'Vila da Manhiça, Bairro Cambeve, Rua 12, Distrito da Manhiça, CP 1929, Maputo, Mozambique',
+                                       'De Boelelaan 1105, 1081 HV Amsterdam, Netherlands',
+                                       'REC E, Roetersstraat 11, Amsterdam, Netherlands'),
+                      stringsAsFactors = FALSE)
+
+make_author <- function(authors,
+                        institutions){
+  
+  out <- c()
+  for (i in 1:nrow(authors)){
+    this_author <- authors$name[i]
+    these_institutions <- authors$affilitation[i]
+    these_institutions <- unlist(strsplit(these_institutions, ','))
+    author_text <- paste0(this_author)
+    for (j in 1:length(these_institutions)){
+      this_institution <- these_institutions[j]
+      if(any(grepl(this_institution, out))){
+        author_text <- paste0(author_text,
+                              '\\footrecall{',
+                              this_institution,
+                              '}'
+                              )
+      } else {
+        # new institution, get full name
+        full_name <- institutions$institution[institutions$code == this_institution]
+        address <- institutions$address[institutions$code == this_institution]
+        author_text <- paste0(author_text,
+                              '\\footremember{',
+                              this_institution,
+                              '}{',
+                              full_name,
+                              ': ',
+                              address,
+                              '}')
+      }
+    }
+    out[i] <- author_text
+  }
+  out <- paste0(out, collapse = ', ')
+  cat(out)
+}
+```
+
+
+
+\begin{center}
+\begin{large}
+
+```{r, results = 'asis', eval = TRUE}
+make_author(authors = authors,
+            institutions = institutions)
+```
+
+\end{large}
+\end{center}
+
+\vspace{5mm}
+
+\begin{center}
+\textbf{Abstract}  
+\end{center}
+
+\vspace{5mm}
+\begin{center}
+\begin{changemargin}{3cm}{3cm} 
+
+Quantifying an event's probability and time frame is essential for calculating its expected value. In the case of global malaria eradication, uncertainty regarding feasibility makes it difficult for policymakers and public health practitioners to make fully informed decisions. The opportunity cost of investments in eradication-specific interventions can be high, particularly in contexts with other urgent health priorities. In a systematic survey of malaria researchers, we query perceptions regarding the likelihood and time frame of eradication, as well as the perceived chief areas needed for improvement in order for eradication to be achieved. We assess pessimism/optimism (via the proxy of years-to-eradication), broken down by area of expertise, and adjust for selection bias. Our results show a disconnect between optimistic public institutional discourse and pessimistic private opinion, suggesting either (a) the necessity of a realistic accounting of eradication's low short-term likelihood in health planning and financing, or (b) the need for a more compelling case regarding eradication's feasibility to be made to the research community.
+\end{changemargin}
+\end{center}
 
 
 # Introduction
@@ -141,145 +213,27 @@ Content-related survey fields consisted of:
 
 4. Ranking of the WHO's "health system building blocks" in regards to attention needed in order to achieve eradication.
 
-## Data generation
+## Supplementary data generation
 
-The survey was intentionally as short as possible, so as to appeal to time-pressed participants. However, supplementary data on researchers' demographics is of value. Accordingly, we estimated the likelihood of a participant being of one of two genders (male or female) based on first name, and the likelihood of a participant being of one of five ethnicities (White, Black, Hispanic, Asian, Other) based on the provided last name.
+The survey was intentionally as short as possible, so as to appeal to time-pressed participants. However, supplementary data on researchers is of value for the assessing of selection bias and determinants of perception. Accordingly, we estimated the likelihood of a participant being of one of two genders (male or female) based on first name, and the likelihood of a participant being of one of five ethnicities (White, Black, Hispanic, Asian, Other) based on the provided last name. For gender estimations we used data from the North Atlantic Population Project, and U.S. government [@Lincoln]; for ethnicity, Khanna et al's bayesian prediction algorithm for the estimation of racial categories [@wru2015, @Imai_2016] was employed.
 
 ## Analysis
 
+The searching and retrieval of information from the PubMed database was carried out using the RISmed package [@Kovalchik2015].
+
 Survey results were first analyzed descriptively. Following Francis Galton's example, we naively take the average of all responses as the likely point estimate for event probabilities, and the totality of the responses to each numeric question as the likely confidence interval of those likelihoods and time frames.
 
-Ordinary least squares regression was employed to estimate the effect of area of expertise on the eradication pessimism-optimism (through the proxy of perceived years to eradication).
+Ordinary least squares regression was employed to estimate the effect of area of expertise on the eradication pessimism-optimism (through the proxy of perceived years to eradication). De-biasing of sample selection was carried out using Heckman's 2 step approach as implemented by Toomet [@toomet2008].
 
-Content analysis of free text comments was carried out using frequency analyses. Comments were categorized and coded according to (more details needed here).
+Qualitative analysis of free text comments was carried out using thematic content analysis.
 
-All analysis was carried out in R language [@R]. All analysis code, as well as the code used for the identification and contacting of participants, is publicly available at [https://github.com/joebrew/malaria_survey](https://github.com/joebrew/malaria_survey). The searching and retrieval of information from the PubMed database was carried out using the RISmed package [@Kovalchik2015].
+Quantitative analysis was carried out in R language [@R]. All analysis code, as well as the code used for the identification and contacting of participants, is publicly available at [https://github.com/joebrew/malaria_survey](https://github.com/joebrew/malaria_survey). 
 
-The estimation of gender and ethnicity likelihoods for each participant relied on Mullen's implementation of US Social Security Administration names' analysis [@gender2015] and Khanna et al's bayesian prediction algorithm for the estimation of racial categories [@wru2015].
 
-De-biasing of sample selection was carried out using Heckman's 2 step approach as implemented by Toomet [@toomet2008].
 
 # Results
 
 A total of `r length(which(df$responded))` researchers participated in the survey from the `r nrow(df)` invitations sent (participation rate of `r round(length(which(df$responded)) / nrow(df) * 100, 2)`%).
-
-## Sample selection 
-
-Respondents were qualitatively different from non-respondents. Importantly, the average number of total author-specific citations was `r round(mean(df$n_citations_total[df$responded]), digits = 2)` among respondents, but `r round(mean(df$n_citations_total[!df$responded]), digits = 2)` among non-respondents. This suggests either a tendency for more senior or more cited researchers to not respond. The distribution of author-specific total citations is shown below (a).
-
-```{r}
-g1 <- ggplot(data = df %>%
-         mutate(responded = ifelse(responded, 'Respondents', 'Non-respondents')), 
-       aes(x = n_citations_total)) +
-  geom_density(aes(group = responded,
-                   fill = responded),
-               alpha = 0.6) +
-  scale_x_log10() +
-  theme_publication() +
-  scale_fill_manual(name = '',
-                    values = c('darkorange', 'lightblue')) +
-  labs(x = 'Citations (log scale)',
-       y = 'Density',
-       title = 'Total lifetime citations')
-```
-
-When examining the number of average citations per article, the difference between respondents was slightly less: `r round(median(df$n_citations_total[df$responded]), digits = 2)` among respondents, and `r round(median(df$n_citations_total[!df$responded]), digits = 2)` among non-respondents. Again, the distribution is shown below (b). 
-
-```{r}
-g2 <- ggplot(data = df %>%
-         mutate(responded = ifelse(responded, 'Respondents', 'Non-respondents')), 
-       aes(x = n_citations_average)) +
-  geom_density(aes(group = responded,
-                   fill = responded),
-               alpha = 0.6,
-               n = 10) +
-  scale_x_log10() +
-  theme_publication() +
-  scale_fill_manual(name = '',
-                    values = c('darkorange', 'lightblue')) +
-  labs(x = 'Citations (log scale)',
-       y = 'Density',
-       title = 'Average citations per article')
-Rmisc::multiplot(g1, g2, cols = 2)
-```
-
-The below table shows the response rate by different demographic groups of interest.
-
-```{r}
-# function to get response rate per categorical variable
-response_rate <- function(variable = 'sex'){
-  df$x <- df[,variable]
-  out <- df %>%
-    group_by(x) %>%
-    summarise(responded = length(which(responded)),
-              n = n()) %>%
-    ungroup %>%
-    mutate(p = responded / n * 100)
-  return(out)
-}
-out_list <- list()
-vars <- c('sex',
-            'ethnicity',
-            'bin_citations')
-for (i in 1:length(vars)){
-  this_var <- vars[i]
-  x <- response_rate(variable = this_var)
-  x$variable <- this_var
-  out_list[[i]] <- x
-}
-out <- bind_rows(out_list) %>%
-  dplyr::select(variable, 
-                x,
-                responded,
-                n, 
-                p) %>%
-  rename(Variable = variable,
-         Characteristic = x,
-         Responded = responded,
-         Invited = n,
-         `Response rate` = p)
-kable(out, format = 'latex', caption = 'Response rate by author characteristics')
-```
-
-The below chart shows response rate by number of citations.
-
-```{r}
-x <- out %>%
-  filter(Variable == 'bin_citations') 
-ggplot(data = x,
-       aes(x = Characteristic,
-           y = `Response rate`)) +
-  geom_bar(stat = 'identity',
-           fill = 'lightblue',
-           alpha = 0.8) +
-  theme_publication() +
-  labs(x = 'Number of total citations',
-       y = 'Response rate',
-       title = 'Response rate by citations') +
-  geom_label(aes(label = paste0(round(`Response rate`, digits = 2), '%')))
-```
-
-## De-biasing of results
-
-
-```{r, results = 'markup'}
-
-ggplot(data = heckman,
-       aes(x = years,
-           y = value,
-           color = key,
-           lty = key)) +
-  geom_line(alpha = 0.8) +
-  geom_point(alpha = 0.6) +
-  theme_black() +
-  labs(x = 'Years',
-       y = 'Likelihood of eradication') +
-  scale_linetype_manual(name = '', values = 1:2) +
-  scale_color_manual(name = '', values = c('white', 'darkorange')) +
-  labs(title = 'Heckman selection adjustment')
-
-
-```
 
 ## Expertise profile among respondents
 
@@ -312,7 +266,7 @@ kable(temp[1:10,], format = "latex", caption = 'Top 10 areas') %>%
 
 Participants were asked to quantify (as a percentage) the likelihood of eradication in the next 10, 20, 30, 40, and 50 years. Most participants saw eradication as extremely unlikely in the next 10-30 years, but increasingly likely thereafter. The following figure shows the distribution of year-specific likelihood perceptions (panels A-E), as well as an illustration of how both likelihood and uncertainty grow over time (panel F).
 
-```{r}
+```{r, fig.cap='Perceptions of likelihood of eradication', fig.height = 6.2}
 # Define function for analyzing the years_n columns
 years_n <- function(n){
   x <- df %>%
@@ -338,13 +292,11 @@ years_n <- function(n){
          subtitle = 'Perceived likelihood of eradication',
          x = 'Likelihood',
          y = '%') +
-    theme_publication(base_size = 10) +
+    theme_paper(base_size = 10) +
     theme(axis.text.x = element_text(angle = 90))
   return(out)
 }
-```
 
-```{r, fig.height = 7}
 # Make plots of all
 years <- seq(10, 50, 10)
 for (i in 1:length(years)){
@@ -382,7 +334,7 @@ g6 <-
               fill = 'orange',
               alpha = 0.6) +
   geom_line(color = 'darkorange') +
-  theme_publication(base_size = 10) +
+  theme_paper(base_size = 10) +
   xlab('Years') +
   ylab('Average likelihood') +
   ggtitle('G. Aggregated perceptions',
@@ -395,23 +347,350 @@ Rmisc::multiplot(g1, g3, g5,
 
 ## Time frame to eradication
 
-Participants were asked to provide the number of years they believe it will take until eradication can be achieved. `r length(which(is.na(df$years)))` (`r round(length(which(is.na(df$years))) / nrow(df) * 100, digits = 1)`%) were either blank or uninteligible, whereas `r length(which(!is.na(df$years)))` participants responded. Among respondants, `r length(which(df$years >= 50))` (`r round(length(which(df$years >= 50)) / length(which(!is.na(df$years))) * 100, digits = 1)` %) estimated that it would be 50 or more years until eradication. The below histogram shows the distribution of responses, appended at 50.
+Participants were asked to provide the number of years they believe it will take until eradication can be achieved. `r length(which(is.na(df$years[df$responded])))` (`r round(length(which(is.na(df$years[df$responded]))) / nrow(df) * 100, digits = 1)`%) were either blank or uninteligible, whereas `r length(which(!is.na(df$years)))` participants responded. Among respondants, `r length(which(df$years >= 50))` (`r round(length(which(df$years >= 50)) / length(which(!is.na(df$years))) * 100, digits = 1)` %) estimated that it would be 50 or more years until eradication. The below histogram shows the distribution of responses, truncated at 50.
 
 ```{r, fig.height = 3.5, fig.width = 4}
 ggplot(data = df,
        aes(x = years)) +
   geom_histogram(fill = 'darkorange',
                  alpha = 0.6) +
-  theme_publication(base_size = 10) +
+  theme_paper(base_size = 10) +
   labs(x = 'Years',
        y = 'Responses',
        title = 'Perceived years until eradication',
        subtitle = '(Estimates of greater than 50 years reduced to 50)')
 ```
 
+
+
+## Sample selection 
+
+Respondents were qualitatively different from non-respondents. Importantly, the average number of total author-specific citations was `r round(mean(df$n_citations_total[df$responded]), digits = 2)` among respondents, but `r round(mean(df$n_citations_total[!df$responded]), digits = 2)` among non-respondents. This suggests either a tendency for more senior or more cited researchers not to respond. When examining the number of average citations per article, the difference between respondents and non-respondents was slightly less: `r round(median(df$n_citations_total[df$responded]), digits = 2)` among respondents, and `r round(median(df$n_citations_total[!df$responded]), digits = 2)` among non-respondents. Males responded at a greater rate (`r round(mean(df$responded[df$sex == 'male'], na.rm = T) * 100, digits = 2)`) than females (`r round(mean(df$responded[df$sex == 'female'], na.rm = T) * 100, digits = 2)`) and those with Hispanic last names responded at a greater rate than those with last names of other ethnicities (see table).
+
+```{r}
+# function to get response rate per categorical variable
+response_rate <- function(variable = 'sex'){
+  df$x <- df[,variable]
+  out <- df %>%
+    group_by(x) %>%
+    summarise(responded = length(which(responded)),
+              n = n()) %>%
+    ungroup %>%
+    mutate(p = responded / n * 100)
+  return(out)
+}
+out_list <- list()
+vars <- c('sex',
+            'ethnicity',
+            'bin_citations')
+for (i in 1:length(vars)){
+  this_var <- vars[i]
+  x <- response_rate(variable = this_var)
+  x$variable <- this_var
+  out_list[[i]] <- x
+}
+out <- bind_rows(out_list) %>%
+  dplyr::select(variable, 
+                x,
+                responded,
+                n, 
+                p) %>%
+  rename(Variable = variable,
+         Characteristic = x,
+         Responded = responded,
+         Invited = n,
+         `Response rate` = p)
+knitr::kable(out, format = 'latex', caption = 'Response rate by author characteristics')
+```
+
+Selection bias is not of concern in the case of differential response if the groups for whom there are differences are not different in terms of the outcome variable. This was the case for sex: males responded at a significantly greater rate than females (p < 0.001), but were not statistically significantly different in regards to pessimism/optimism (ie, time frame or likelihood of eradication). In the case of researcher impact (as measured by the total number of citations), selection bias plays an important role: being highly-cited was associated both with eradication "pessimism" as well as likelihood of non-response. In other words, our pool of respondents was less highly-cited than our pool of invitees, and among respondents, those who were highly-cited tended to be more pessimistic (see below figure).
+
+```{r}
+# df$bin_citations <- factor(df$bin_citations,
+#                            labels = c('0',
+#                                       '1-9',
+#                                       '10-51',
+#                                       '52+'))
+x <- df %>%
+  group_by(citations = bin_citations) %>%
+  summarise(years_10 = mean(years_10_numeric, na.rm = TRUE),
+            years_20 = mean(years_20_numeric, na.rm = TRUE),
+            years_30 = mean(years_30_numeric, na.rm = TRUE),
+            years_40 = mean(years_40_numeric, na.rm = TRUE),
+            years_50 = mean(years_50_numeric, na.rm = TRUE),
+            n = length(unique(email))) %>%
+  ungroup %>%
+  gather(key, value, years_10:years_50) %>%
+  filter(!is.na(citations))
+
+cols <- colorRampPalette(c('red', 'orange', 'blue') #brewer.pal(n = 9, 'Spectral')
+                         )(length(unique(x$citations)))
+ggplot(data = x %>% filter(!is.na(citations)),
+       aes(x = as.numeric(gsub('years_', '', key)),
+           y = value,
+           color = citations,
+           group = citations)) +
+  geom_point(alpha = 0.7) +
+  geom_line(alpha = 0.6) +
+  theme_paper() +
+  scale_color_manual(name = 'Number of citations',
+                     values = cols) +
+  labs(x = 'Years',
+       y = '% likelihood',
+       title = 'Difference in perceived likelihood of eradication by citations',
+       subtitle = 'More citations = more pessimistic')
+```
+
+## De-biasing of results
+
+We used Heckman's 2-step correction method [@Heckman_1979]. Given that sex affected response rate but not response itself, we were able to use sex as an instrumental variable, introducing it in both the selection and response models. Our selection model, which estimated the likelihood of survey response as a probit function of sex allowed us to estimate (via the Inverse Mills ratio) an expected error term for our outcome models, in which we quantify the effect of the number of citations on the perceived average likelihood of eradication at 10, 20, 30, 40, and 50 years. The below chart shows the difference in the aggregate perceived likelihood of eradication before and after implementing Heckman's 2-step model.
+
+```{r, results = 'markup'}
+ggplot(data = heckman,
+       aes(x = years,
+           y = value,
+           color = key,
+           lty = key)) +
+  geom_line(alpha = 0.8) +
+  geom_point(alpha = 0.6) +
+  theme_paper() +
+  labs(x = 'Years',
+       y = 'Likelihood of eradication') +
+  scale_linetype_manual(name = '', values = 1:2) +
+  scale_color_manual(name = '', values = c('blue', 'darkorange')) +
+  labs(title = 'Heckman selection adjustment')
+```
+
+The below table shows the Heckman model Heckman model estimates for all five models.
+
+```{r}
+rn <- names(heck_10$coefficients)
+heck <- data_frame(Coefficient = rn,
+                   `Model 10` = heck_10$coefficients,
+                   `Model 20` = heck_20$coefficients,
+                   `Model 30` = heck_30$coefficients,
+                   `Model 40` = heck_40$coefficients,
+                   `Model 50` = heck_50$coefficients)
+knitr::kable(heck)
+```
+
+
 ## Difference in perceptions by expertise
 
 Participants were heterogenous in their perceptions, with all of the 5 pre-determined cut-offs containing the whole range of likelihoods (0-100%), and the free-form time frame responses suggesting that eradication would be achieved in as little as `r min(df$years, na.rm = TRUE)` to as many as "never".  Heterogeneity can be partly explained by area of expertise, as evidenced by significant differences in the perceived years to eradication by area of expertise.
+
+
+```{r, fig.height = 3.5, fig.width = 4}
+areas_df <- areas_df %>% arrange(desc(count))
+small_areas <- areas_df$area[1:12]
+model_formula <- paste0('years ~ ',
+                        paste0(paste0('area_', gsub(' ', '_', small_areas)), collapse = ' + '))
+model_formula <- as.formula(model_formula)
+fit <- lm(model_formula, data = df)
+# Get confidence intervals too
+ci <- tidy(confint(fit))
+x <- cbind(tidy(fit), ci)
+names(x) <- c('term', 'estimate', 'se', 'stat', 'p', 'rownames', 'lwr', 'upr')
+x <- x %>%
+  dplyr::select(term, estimate,
+                p, lwr, upr)
+the_intercept <- x$estimate[1]
+x <- x[-1,]
+for (the_column in c('estimate', 'lwr', 'upr')){
+  x[,the_column] <- x[,the_column] + the_intercept
+}
+x$term <- gsub('area_|TRUE', '', x$term)
+x <- x %>%
+  dplyr::arrange(estimate)
+x$term <- gsub('_', '\n', x$term)
+x$term <- factor(x$term, levels = x$term)
+ggplot(data = x,
+       aes(x = term,
+           y = estimate)) +
+  geom_bar(stat = 'identity',
+           fill = 'darkorange',
+           alpha = 0.6) +
+  geom_errorbar(aes(ymin = lwr,
+                    ymax = upr),
+                alpha = 0.6,
+                width = 0.8,
+                color = 'red') +
+  theme_paper(base_size = 10) +
+  labs(x = 'Area',
+       y = 'Years',
+       title = 'Perceived years to eradication',
+       subtitle = 'By expertise, adjusted for multiple areas of expertise') +
+  theme(axis.text.x = element_text(angle = 90))
+
+```
+
+
+
+
+## Health system building blocks 
+
+Finally, researchers were asked to rank the WHO's 6 health system building blocks as needing the most to least attention (6-1 scale) in order for eradication to be achieved. Disagreement was high, as evidenced by the variance in responses in the below point and violin chart. However, the general tendency was that governance was recognized as the most important area requiring attention, with health information thought to be the area least requiring attention.
+
+```{r}
+bb <- c('governance', 'health_workforce',
+        'health_financing', 'health_technologies',
+        'health_information', 'service_delivery')
+results_list <- list()
+for (i in 1:length(bb)){
+  this_df <- data.frame(bb = bb[i],
+                        ranking = as.numeric(df[,bb[i]]))
+  results_list[[i]] <- this_df
+}
+results <- bind_rows(results_list)
+results$bb <- gsub('_', '\n', results$bb)
+
+results_agg <-
+  results %>%
+  dplyr::group_by(bb) %>%
+  dplyr::summarise(avg = mean(ranking, na.rm = TRUE)) %>%
+  arrange(avg)
+results_agg$bb <- factor(results_agg$bb,
+                         levels = results_agg$bb)
+results$bb <- factor(results$bb, 
+                     levels = levels(results_agg$bb))
+
+library(ggridges)
+ggplot(data = results %>% filter(!is.na(ranking)),
+       aes(x = ranking,
+           y = bb,
+           fill = bb)) +
+  geom_density_ridges(#fill = 'darkorange',
+                      alpha = 0.6,
+                      scale = 1.5) +
+  theme_paper() +
+  xlim(0,30) +
+  labs(x = 'Perceived importance',
+       y = 'WHO Building Block') +
+ scale_fill_cyclical(values = c("darkorange", "yellow"))
+
+
+# ggplot(data = results) + 
+#   geom_violin(aes(x = bb,
+#            y = ranking),
+#            fill = 'orange',
+#               alpha = 0.6) +
+#   geom_jitter(aes(x = bb,
+#            y = ranking),
+#            color = 'black',
+#            with = 0.4,
+#            height = 0.4,
+#               alpha = 0.3,
+#               size = 1) +
+#   theme_paper(base_size = 10) +
+#   labs(x = 'WHO Building block',
+#        y = 'Ranking',
+#        title = 'Perceived areas needing attention',
+#        subtitle = 'Small points: jittered individual responses; large triangles: averages') +
+#   geom_point(data = results_agg,
+#              aes(x = bb,
+#                  y = avg),
+#              size = 5,
+#              pch = 17,
+#              color = 'black',
+#              alpha = 0.8) +
+#   ylim(0, 6)
+```
+
+## Qualitative analysis of results
+
+Participants were invited to provide "any general comments on the timeline and likelihood of global eradication". Of the `r length(which(df$responded))` who responded to the survey, `r length(which(!is.na(df$comments)))` (`r round(length(which(!is.na(df$comments))) / length(which(df$responded)) * 100, digits = 2)`%) provided a comment. Thematic content analysis [@Vaismoradi_2016] was employed to code responses into four subject themes as well as binary categorization of descriptive vs. presciptive. 
+
+The four subject themes, identified and refined through iterative analysis, were:
+
+1. Innovation
+2. Systematic challenges  
+3. Poverty
+4. Meta: challenging the question, re-framing the goal, insisting on other priorities, etc.
+
+
+
+# Discussion
+
+## General pessimism
+
+Our study reveals a striking gap between the public discourse on malaria eradication, and those views held (largely privately) by malaria researchers. Approximately three-quarters of respondents believe that malaria will not be eradicated in the next 50 years; in other words, assuming our pool of respondents is of typical post-PhD age, most believe they will not live to see eradication.
+
+If we take the pooled opinions of researchers, as revealed through this survey, as the best approximation of truth available, then the disconnect between public discourse on malaria eradication and private opinion is troubling. It suggests that the goals set by the Bill and Melinda Gates Foundation (eradication "within a generation") and the WHO GMP (eradication "within the lifetime of young scientists just embarking on their careers") are unrealistic at best, and misleading at worst. This has important implications for spending in public health, since the attention and resources of funders, researchers and government agencies are directed to those areas where a result is expected.
+
+On the other hand, there are many reasons to be skeptical that the combined "wisdom of crowds" of malaria researchers is a reliable indicator of truth. First, academic researchers are specialists - their narrow, field-specific view of eradication's feasibility is arguably less reliable than the more "global" views of the WHO, or Bill Gates. Second, a number of biases may come in to play in this study.
+
+Among these biases, 4 are worth mentioning specifically. (1) "Conjunction fallacy" suggests that the general goal of eradication may seem less likely than the sum of the goals of country-specific elimination. (2) A (reverse) variant of the "hot hand fallacy", in which researchers may mistakenly base their assessment of current chances of eradication on previous failures. (3) Parkinson's law of triviality suggests that researchers may disproportionately see the challenges of their own research (antimalarial drug resistance, etc.) as larger or more relevant to the global eradication campaign than they really are. (4) Finally, and ironically, "optimism bias" may play a perverse role in researchers' responses; though eradication is certainly a goal desired by all, one could argue that malaria research specialists subconciously realize that they actually stand to lose out profesionally in the case of eradication.
+
+Whether the collective "wisdom" of researchers is worth adhering to or not is arguable. That said, to the extent that researchers' private opinions differ so greatly from those of global health leaders is itself a noteworthy result. If leaders' high levels of optimism are well-placed, this suggests that researchers are unduly pessimistic, and efforts should be made to convince them that eradication is more feasible than they realize. If, on the other hand, collective wisdom is a better forecasting agent than the proclamations and objectives of global health leaders, then it is important to recognize the sad truth that we are likely further from eradication than we would like to be. In this case, though the discourse on eradication can be motivating and inspiring, resources should be directed in a manner that reflects an intended outcome's likelihood of occurrence.
+
+## Discord over building blocks to eradication
+
+It is noteworthy that there was so much discord among researchers in regards to which WHO building blocks required the most attention in order for eradication to be achieved. All six possible categories received votes for both the lowest and highest levels of importance, as well as every level in between. And the difference between "health information" (the building block deemed as least important) and "governance" (the most important) was less than 0.5 on a 1-6 scale.
+
+This discord suggests that the path to implementing strategies for eradication is not clear, at least from the perspective of this study's participants. This could mean that further work is needed in order to prioritize which areas require the most investment and attention in order for eradication to occur. On the other hand, one could interpret this result as reflecting the fact that previous work on priorities (ie, MalERA) has not been fully accessed or understood by the larger malaria research community. 
+
+## Few differences by area of expertise
+
+It is noteworthy that among the most "optimistic" experts were from the field of bioinformatics. This could be explained by the fact that, relative to other more "traditional" areas of science, informatics regularly sees paradigm shifts, and changes in technology and breakthroughs occur at a more rapid rate. That said, the high degree of optimism among chemists would seem to contradict this hypothesis. At any rate... (more details will go here).
+
+## Limitations
+
+In addition to the biases mentioned above, this study has many limitations. First, though results are not disclosed at the individual level, this survey was not entirely anonymous, suggesting that social desirability bias may have influenced responses, and that selection bias likely meant our pool of participants were substantially different from those who choose not to participate.
+
+Second, we made no distinguishment between quality of research, years of experience, academic achievements, geographical area, etc. Our inclusion criteria were simple and rudimentary, allowing us to access many diverse viewpoints, but (perhaps inappropriately) weighting all viewpoints as equal.
+
+Third, this study included the corresponding authors of indexed journals. Though certainly a group with important knowledge related to malaria, this misses malaria control program employees, health agency workers, and other stakeholders. Their experiences and viewpoints are most likely vastly different from those of academecians.
+
+
+## Implications
+
+Our survey attempted to quantify the likelihood of and time frame to malaria eradication by gauging the collective opinion of malaria researchers. Our results suggest that eradication is unlikely in the short and medium terms, and that there exists a great deal of disagreement among researchers in regards to which areas require the most attention in order for eradication to occur. The implication of these results are three-fold: (1) that those working or investing in eradication-specific campaigns should factor in the low likelihood and long time frame when calculating those campaigns' expected value; (2) that champions of near-term eradication need to make a more compelling case to malaria researchers of eradication's feasibility, in order to better focus and inspire the latter; and (3) that discord among malaria researchers as to which areas need the most attention in order for eradication to occur suggests a need for open discussion and concensus-making, so that resources and focus are directed appropriately.
+
+
+References {#references .unnumbered}
+==========
+
+# Appendix
+
+The distribution of author-specific total citations is shown below (a).
+
+```{r}
+g1 <- ggplot(data = df %>%
+         mutate(responded = ifelse(responded, 'Respondents', 'Non-respondents')), 
+       aes(x = n_citations_total)) +
+  geom_density(aes(group = responded,
+                   fill = responded),
+               alpha = 0.6) +
+  scale_x_log10() +
+  theme_paper() +
+  scale_fill_manual(name = '',
+                    values = c('darkorange', 'lightblue')) +
+  labs(x = 'Citations (log scale)',
+       y = 'Density',
+       title = 'Total lifetime citations')
+```
+
+Again, the distribution is shown below (b). 
+
+```{r}
+g2 <- ggplot(data = df %>%
+         mutate(responded = ifelse(responded, 'Respondents', 'Non-respondents')), 
+       aes(x = n_citations_average)) +
+  geom_density(aes(group = responded,
+                   fill = responded),
+               alpha = 0.6,
+               n = 10) +
+  scale_x_log10() +
+  theme_paper() +
+  scale_fill_manual(name = '',
+                    values = c('darkorange', 'lightblue')) +
+  labs(x = 'Citations (log scale)',
+       y = 'Density',
+       title = 'Average citations per article')
+# Rmisc::multiplot(g1, g2, cols = 2)
+g1
+g2
+```
 
 ```{r, fig.height = 4.5, fig.width = 4.5}
 # Get averages per area
@@ -464,7 +743,7 @@ ggplot(data = dist_results,
            x = val)) +
   geom_density(fill = 'darkorange',
                alpha = 0.6) +
-  theme_publication(base_size = 10) +
+  theme_paper(base_size = 10) +
   labs(x = 'Years',
        y = 'Density',
        title = 'Perceived years to eradication',
@@ -472,46 +751,6 @@ ggplot(data = dist_results,
   facet_wrap(~the_area) 
 ```
 
-```{r, fig.height = 3.5, fig.width = 4}
-model_formula <- paste0('years ~ ',
-                        paste0(paste0('area_', gsub(' ', '_', small_areas)), collapse = ' + '))
-model_formula <- as.formula(model_formula)
-fit <- lm(model_formula, data = df)
-# Get confidence intervals too
-ci <- tidy(confint(fit))
-x <- cbind(tidy(fit), ci)
-names(x) <- c('term', 'estimate', 'se', 'stat', 'p', 'rownames', 'lwr', 'upr')
-x <- x %>%
-  dplyr::select(term, estimate,
-                p, lwr, upr)
-the_intercept <- x$estimate[1]
-x <- x[-1,]
-for (the_column in c('estimate', 'lwr', 'upr')){
-  x[,the_column] <- x[,the_column] + the_intercept
-}
-x$term <- gsub('area_|TRUE', '', x$term)
-x <- x %>%
-  dplyr::arrange(estimate)
-x$term <- gsub('_', '\n', x$term)
-x$term <- factor(x$term, levels = x$term)
-ggplot(data = x,
-       aes(x = term,
-           y = estimate)) +
-  geom_bar(stat = 'identity',
-           fill = 'darkorange',
-           alpha = 0.6) +
-  geom_errorbar(aes(ymin = lwr,
-                    ymax = upr),
-                alpha = 0.6,
-                width = 0.8) +
-  theme_publication(base_size = 10) +
-  labs(x = 'Area',
-       y = 'Years',
-       title = 'Perceived years to eradication',
-       subtitle = 'By expertise, adjusted for multiple areas of expertise') +
-  theme(axis.text.x = element_text(angle = 90))
-
-```
 
 Heterogeneity by area of expertise is also apparent in perceived likelihood of eradication over the pre-defined five time-points, as seen below.
 
@@ -523,7 +762,7 @@ ggplot(data = year_results,
   geom_line(aes(group = area,
            color = area,
            lty = area)) +
-  theme_publication(base_size = 10) +
+  theme_paper(base_size = 10) +
   scale_color_manual(name = '',
                      values = cols,
                      labels = unique(year_results$area)) +
@@ -536,9 +775,6 @@ ggplot(data = year_results,
           'By area of expertise')
 ```
 
-## Sentiment analysis of free-text commentary
-
-This section is unfinished. Below is the distribution of "sentiment" among the responses (0 is neutral, below 0 is negative, above 0 is positive), but this is preliminary. The chart is colored by ethnicity, and faceted by gender.
 
 ```{r}
 ggplot(data = df %>%
@@ -551,120 +787,7 @@ ggplot(data = df %>%
   geom_density(aes(fill = ethnicity),
                alpha = 0.6,
                n = 10) +
-  theme_publication() +
+  theme_paper() +
   facet_wrap(~gender)
 
 ```
-
-## Health system building blocks 
-
-Finally, researchers were asked to rank the WHO's 6 health system building blocks as needing the most to least attention (6-1 scale) in order for eradication to be achieved. Disagreement was high, as evidenced by the variance in responses in the below point and violin chart. However, the general tendency was that governance was recognized as the most important area requiring attention, with health information thought to be the area least requiring attention.
-
-```{r}
-bb <- c('governance', 'health_workforce',
-        'health_financing', 'health_technologies',
-        'health_information', 'service_delivery')
-results_list <- list()
-for (i in 1:length(bb)){
-  this_df <- data.frame(bb = bb[i],
-                        ranking = as.numeric(df[,bb[i]]))
-  results_list[[i]] <- this_df
-}
-results <- bind_rows(results_list)
-results$bb <- gsub('_', '\n', results$bb)
-
-results_agg <-
-  results %>%
-  dplyr::group_by(bb) %>%
-  dplyr::summarise(avg = mean(ranking, na.rm = TRUE)) %>%
-  arrange(avg)
-results_agg$bb <- factor(results_agg$bb,
-                         levels = results_agg$bb)
-results$bb <- factor(results$bb, 
-                     levels = levels(results_agg$bb))
-
-library(ggridges)
-ggplot(data = results %>% filter(!is.na(ranking)),
-       aes(x = ranking,
-           y = bb,
-           fill = bb)) +
-  geom_density_ridges(#fill = 'darkorange',
-                      alpha = 0.6,
-                      scale = 1.5) +
-  theme_black() +
-  xlim(0,30) +
-  labs(x = 'Perceived importance',
-       y = 'WHO Building Block') +
- scale_fill_cyclical(values = c("darkorange", "yellow"))
-
-
-# ggplot(data = results) + 
-#   geom_violin(aes(x = bb,
-#            y = ranking),
-#            fill = 'orange',
-#               alpha = 0.6) +
-#   geom_jitter(aes(x = bb,
-#            y = ranking),
-#            color = 'black',
-#            with = 0.4,
-#            height = 0.4,
-#               alpha = 0.3,
-#               size = 1) +
-#   theme_publication(base_size = 10) +
-#   labs(x = 'WHO Building block',
-#        y = 'Ranking',
-#        title = 'Perceived areas needing attention',
-#        subtitle = 'Small points: jittered individual responses; large triangles: averages') +
-#   geom_point(data = results_agg,
-#              aes(x = bb,
-#                  y = avg),
-#              size = 5,
-#              pch = 17,
-#              color = 'black',
-#              alpha = 0.8) +
-#   ylim(0, 6)
-```
-
-## Qualitative analysis of results
-
-Participants were invited to provide "any general comments on the timeline and likelihood of global eradication". Of the `r length(which(df$responded))` who responded to the survey, `r length(which(!is.na(df$comments)))` (`r round(length(which(!is.na(df$comments))) / length(which(df$responded)) * 100, digits = 2)`%) provided a comment.
-
-# Discussion
-
-## Collective pessimism
-
-Our study reveals a striking gap between the public discourse on malaria eradication, and those views held (largely privately) by malaria researchers. Approximately three-quarters of respondents believe that malaria will not be eradicated in the next 50 years; in other words, assuming our pool of respondents is of typical post-PhD age, most believe they will not live to see eradication.
-
-If we take the pooled opinions of researchers, as revealed through this survey, as the best approximation of truth available, then the disconnect between public discourse on malaria eradication and private opinion is troubling. It suggests that the goals set by the Bill and Melinda Gates Foundation (eradication "within a generation") and the WHO GMP (eradication "within the lifetime of young scientists just embarking on their careers") are unrealistic at best, and misleading at worst. This has important implications for spending in public health, since the attention and resources of funders, researchers and government agencies are directed to those areas where a result is expected.
-
-On the other hand, there are many reasons to be skeptical that the combined "wisdom of crowds" of malaria researchers is a reliable indicator of truth. First, academic researchers are specialists - their narrow, field-specific view of eradication's feasibility is arguably less reliable than the more "global" views of the WHO, or Bill Gates. Second, a number of biases may come in to play in this study.
-
-Among these biases, 4 are worth mentioning specifically. (1) "Conjunction fallacy" suggests that the general goal of eradication may seem less likely than the sum of the goals of country-specific elimination. (2) A (reverse) variant of the "hot hand fallacy", in which researchers may mistakenly base their assessment of current chances of eradication on previous failures. (3) Parkinson's law of triviality suggests that researchers may disproportionately see the challenges of their own research (antimalarial drug resistance, etc.) as larger or more relevant to the global eradication campaign than they really are. (4) Finally, and ironically, "optimism bias" may play a perverse role in researchers' responses; though eradication is certainly a goal desired by all, one could argue that malaria research specialists subconciously realize that they actually stand to lose out profesionally in the case of eradication.
-
-Whether the collective "wisdom" of researchers is worth adhering to or not is arguable. That said, to the extent that researchers' private opinions differ so greatly from those of global health leaders is itself a noteworthy result. If leaders' high levels of optimism are well-placed, this suggests that researchers are unduly pessimistic, and efforts should be made to convince them that eradication is more feasible than they realize. If, on the other hand, collective wisdom is a better forecasting agent than the proclamations and objectives of global health leaders, then it is important to recognize the sad truth that we are likely further from eradication than we would like to be. In this case, though the discourse on eradication can be motivating and inspiring, resources should be directed in a manner that reflects an intended outcome's likelihood of occurrence.
-
-## Building blocks to eradication
-
-It is noteworthy that there was so much discord among researchers in regards to which WHO building blocks required the most attention in order for eradication to be achieved. All six possible categories received votes for both the lowest and highest levels of importance, as well as every level in between. And the difference between "health information" (the building block deemed as least important) and "governance" (the most important) was less than 0.5 on a 1-6 scale.
-
-This discord suggests that the path to implementing strategies for eradication is not clear, at least from the perspective of this study's participants. This could mean that further work is needed in order to prioritize which areas require the most investment and attention in order for eradication to occur. On the other hand, one could interpret this result as reflecting the fact that previous work on priorities (ie, MalERA) has not been fully accessed or understood by the larger malaria research community. 
-
-## Areas of expertise
-
-It is noteworthy that among the most "optimistic" experts were from the field of bioinformatics. This could be explained by the fact that, relative to other more "traditional" areas of science, informatics regularly sees paradigm shifts, and changes in technology and breakthroughs occur at a more rapid rate. That said, the high degree of optimism among chemists would seem to contradict this hypothesis. At any rate... (more details will go here).
-
-## Limitations
-
-In addition to the biases mentioned above, this study has many limitations. First, though results are not disclosed at the individual level, this survey was not entirely anonymous, suggesting that social desirability bias may have influenced responses, and that selection bias likely meant our pool of participants were substantially different from those who choose not to participate.
-
-Second, we made no distinguishment between quality of research, years of experience, academic achievements, geographical area, etc. Our inclusion criteria were simple and rudimentary, allowing us to access many diverse viewpoints, but (perhaps inappropriately) weighting all viewpoints as equal.
-
-Third, this study included the corresponding authors of indexed journals. Though certainly a group with important knowledge related to malaria, this misses malaria control program employees, health agency workers, and other stakeholders. Their experiences and viewpoints are most likely vastly different from those of academecians.
-
-
-## Implications
-
-Our survey attempted to quantify the likelihood of and time frame to malaria eradication by gauging the collective opinion of malaria researchers. Our results suggest that eradication is unlikely in the short and medium terms, and that there exists a great deal of disagreement among researchers in regards to which areas require the most attention in order for eradication to occur. The implication of these results are three-fold: (1) that those working or investing in eradication-specific campaigns should factor in the low likelihood and long time frame when calculating those campaigns' expected value; (2) that champions of near-term eradication need to make a more compelling case to malaria researchers of eradication's feasibility, in order to better focus and inspire the latter; and (3) that discord among malaria researchers as to which areas need the most attention in order for eradication to occur suggests a need for open discussion and concensus-making, so that resources and focus are directed appropriately.
-
-References {#references .unnumbered}
-==========
