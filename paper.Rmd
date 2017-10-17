@@ -139,7 +139,111 @@ Quantifying an event's probability and time frame is essential for calculating i
 
 The scientific and public health communities have had eradication on their long-term agenda since the WHO established the Global Malaria Eradication Program in the 1950s [@Njera2011]. Following the failure of the WHO's first attempt, the focus shifted away from global eradication and towards local elimination and control strategies. 
 
-In recent years, much of the discourse regarding malaria has shifted back to global eradication [@Roberts2007], with funders, researchers, and public health practitioners rallying to the cause [@Tanner2015]. The Bill and Melinda Gates Foundation has begun actively promoting eradication as feasible "within a generation" [@Gates2014], and the leadership of the World Health Organization (WHO) has supported this goal. Even in areas of high endemicity, advances in immunology, parasitology, modeling and vaccinology, along with rapid economic development, have made eradication appear a more feasible goal, even if not possible in the short term [@Snow2015, @Eckhoff2014]. From both administrative [@Yamey2004] and scientific [@Alonso2011] points of view, eradication has never before received so much attention, nor appeared so within grasp.
+In recent years, much of the discourse regarding malaria has shifted back to global eradication [@Roberts2007], with funders, researchers, and public health practitioners rallying to the cause [@Tanner2015]. The Bill and Melinda Gates Foundation has begun actively promoting eradication as feasible "within a generation" [@Gates2014], and the leadership of the World Health Organization (WHO) has supported this goal, stating the objective of eliminating malaria in 65 new countries from 2015 through 2030 (see below).
+
+```{r}
+# Read WHO data (compiled manually from WHO website)
+who <- readr::read_csv('who_elimination_data.csv')
+who$year <- as.numeric(substr(who$year, 6, 9))
+projection <- data.frame(year = seq(2030.2, 2035, length = 20),
+                         countries = seq(33, 0, length = 20))
+g <- ggplot(data = who %>% mutate(past = ifelse(past, 'Historical',
+                                           'WHO objective')) %>%
+         filter(!is.na(with_malaria)) ,
+       aes(x = year,
+           y = with_malaria,
+           color = past)) +
+  geom_line() +
+  geom_point() +
+  theme_paper() +
+  labs(x = '',
+       y = 'Countries',
+       title = 'Countries with malaria: Observed and WHO objectives',
+       subtitle = 'Data from http://www.who.int/malaria/areas/elimination/overview/en/') +
+  scale_color_manual(name = '',
+                     values = c('darkorange', 'blue')) +
+  ylim(0, 130) +
+  theme(axis.text.x = element_text(angle = 90)) +
+  geom_line(data = projection,
+            aes(x = year,
+                y = countries,
+                color = NA,
+                group = NA),
+            color = 'black',
+            lty = 2) +
+  geom_hline(yintercept = 0, col = 'red')
+g
+# #Make animation for presentation
+# make_animation <- function(){
+#   g <- 
+#     ggplot(data = who %>% mutate(past = ifelse(past, 'Historical',
+#                                            'WHO objective')) %>%
+#          filter(!is.na(with_malaria)) ,
+#        aes(x = year,
+#            y = with_malaria,
+#            color = past)) +
+#   geom_line() +
+#   geom_point() +
+#   theme_black() +
+#   labs(x = '',
+#        y = 'Countries',
+#        title = 'Countries with malaria: Observed and WHO objectives',
+#        subtitle = 'Data from http://www.who.int/malaria/areas/elimination/overview/en/') +
+#   scale_color_manual(name = '',
+#                      values = c('darkorange', 'blue')) +
+#   ylim(0, 130) +
+#   theme(axis.text.x = element_text(angle = 90)) +
+#   geom_hline(yintercept = 0, col = 'red') +
+#     xlim(1970, 2060)
+#   add_zero <- function (x, n) {
+#     x <- as.character(x)
+#     adders <- n - nchar(x)
+#     adders <- ifelse(adders < 0, 0, adders)
+#     for (i in 1:length(x)) {
+#         if (!is.na(x[i])) {
+#             x[i] <- paste0(paste0(rep("0", adders[i]), collapse = ""), 
+#                 x[i], collapse = "")
+#         }
+#     }
+#     return(x)
+# }
+#   counter <- 0
+#   a <- (seq(1,5, length = 15))^2.5
+#   a <- round(a)
+#   a <- c(a, rev(a) +2)
+#   for (i in a){
+#     message(counter)
+#     counter <- counter +1
+#     projection <- data.frame(year = seq(2017, 2035+i, length = 20),
+#                          countries = seq(100, 0, length = 20))
+#     g <- g + geom_line(data = projection,
+#             aes(x = year,
+#                 y = countries,
+#                 color = NA,
+#                 group = NA),
+#             color = 'grey',
+#             alpha = 0.1) 
+#     x <- g +
+#   geom_line(data = projection,
+#             aes(x = year,
+#                 y = countries,
+#                 color = NA,
+#                 group = NA),
+#             color = 'white',
+#             lty = 2) 
+#     print(x)
+#     ggsave(filename = paste0('animation/',
+#                              add_zero(counter, n = 3),
+#                              '.png'))
+#   }
+# }
+# make_animation()
+```
+
+
+Even in areas of high endemicity, advances in immunology, parasitology, modeling and vaccinology, along with rapid economic development, have made eradication appear a more feasible goal, even if not possible in the short term [@Snow2015, @Eckhoff2014]. From both administrative [@Yamey2004] and scientific [@Alonso2011] points of view, eradication has never before received so much attention, nor appeared so within grasp. 
+
+
 
 Most of the current research on expert opinion regarding the feasibility of malaria eradication focuses on the \emph{how} rather than the \emph{if} and the \emph{when} [@Tanner2015]. The participants in the Malaria Eradication Research Agenda (MalERA) process, in particular, have positioned themselves as thought leaders in the field of guiding research goals and identifying gaps in order for elmination to occur [@Alonso2011]. Though the MalERA authors firmly state that eradication is \emph{not} feasible given the "current tools and state of knowledge", mentions to the time frame are vague ("within the lifetime of young scientists just embarking on their careers") and no mention is made of the perception of the probability of achieving eradication.  
 
@@ -344,6 +448,45 @@ g6 <-
 Rmisc::multiplot(g1, g3, g5,
                  g2, g4, g6,
                  cols = 2)
+
+
+# z <- ggplot(data = who %>% mutate(past = ifelse(past, 'Historical',
+#                                            'WHO objective')) %>%
+#          filter(!is.na(with_malaria)) ,
+#        aes(x = year,
+#            y = with_malaria,
+#            color = past)) +
+#   geom_line() +
+#   geom_point() +
+#   theme_paper() +
+#   labs(x = '',
+#        y = 'Countries',
+#        title = 'Countries with malaria: Observed and WHO objectives',
+#        subtitle = 'Data from http://www.who.int/malaria/areas/elimination/overview/en/') +
+#   scale_color_manual(name = '',
+#                      values = c('darkorange', 'blue')) +
+#   ylim(0, 130) +
+#   theme(axis.text.x = element_text(angle = 90)) +
+#   geom_line(data = projection,
+#             aes(x = year,
+#                 y = countries,
+#                 color = NA,
+#                 group = NA),
+#             color = 'white',
+#             lty = 2) +
+#   geom_hline(yintercept = 0, col = 'red')
+# 
+# # xa_plot <- xa %>% mutate(year = year + 2016) %>% filter(year == 2066)
+# xa_plot <- data.frame(year = c(2015, 2066),
+#                       val = c(100, 0))
+#   
+# z + geom_line(data = xa_plot,
+#               aes(x = year,
+#                   y = val),
+#               color = 'white',
+#               alpha = 0.6,
+#               group = 1) +
+#   theme_black()
 ```
 
 ## Time frame to eradication

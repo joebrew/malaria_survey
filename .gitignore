@@ -5,3 +5,5 @@ credentials
 *.RData
 /data
 /animation
+.httr-oauth
+rsconnect/
