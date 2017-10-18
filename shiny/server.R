@@ -17,11 +17,30 @@ shinyServer(function(input, output) {
   })
   
   output$p1 <- renderPlot({
-    plot_variable(input$variable)
+    # plot_variable(input$variable)
+    plot_variable('height')
   })
   
   output$p2 <- renderPlot({
-    plot_variable_by(input$variable,
+    # plot_variable_by(input$variable,
+    #                  input$by_variable)
+    plot_variable_by('height',
+                     input$by_variable)
+  })
+  output$p3 <- renderPlot({
+    plot_variable('sleep')
+  })
+  
+  output$p4 <- renderPlot({
+    plot_variable_by('sleep',
+                     input$by_variable)
+  })
+  output$p5 <- renderPlot({
+    plot_variable('age')
+  })
+  
+  output$p6 <- renderPlot({
+    plot_variable_by('age',
                      input$by_variable)
   })
   output$v1 <- renderValueBox({

@@ -107,7 +107,8 @@ plot_variable <- function(variable = 'sleep',
     theme_databrew() +
     labs(x = Hmisc::capitalize(variable),
          y = 'Density',
-         title = paste0('Crowd perception of ', variable)) +
+         title = paste0("Joe's ", variable),
+         subtitle = paste0('Crowd perception')) +
     geom_vline(xintercept = avg,
                lty = 2,
                alpha = 0.8) +
@@ -144,7 +145,7 @@ plot_variable_by <- function(variable = 'sleep',
         theme_databrew() +
         labs(x = Hmisc::capitalize(variable),
              y = 'Density',
-             title = paste0("Crowd perception of Joe's ", variable)) +
+             title = paste0(variable)) +
         scale_fill_manual(name = '',
                           values = c('darkorange', 'blue'))
     } else {
@@ -155,7 +156,7 @@ plot_variable_by <- function(variable = 'sleep',
         theme_databrew() +
         labs(x = Hmisc::capitalize(variable_by),
              y = '',
-             title = paste0("Crowd perception of Joe's ", variable)) +
+             title = paste0(variable)) +
         stat_smooth (geom="line", alpha=0.3, size=1, #span=0.5,
                      color = 'blue') +
         geom_line(stat="smooth",method = "lm",
