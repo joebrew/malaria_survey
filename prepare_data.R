@@ -451,6 +451,7 @@ if('prepared_data.RData' %in% dir()){
     ifelse(df$n_citations_total <= 5, '0-5',
            ifelse(df$n_citations_total < 99, '6-99',
                   ifelse(df$n_citations_total >= 100, '> 99', NA)))
+  df$bin_citations[is.na(df$bin_citations)] <- '0-5'
     # cut(x = df$n_citations_total,
     #     breaks = quantile(df$n_citations_total,
     #                       na.rm = TRUE),
