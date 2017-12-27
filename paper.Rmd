@@ -1,5 +1,5 @@
 ---
-title: "Silent pessimists: researchers' perceptions of malaria eradication and implications for health spending"
+title: "Silent pessimists: researchers' perceptions of malaria eradication"
 bibliography: library.bib
 output: 
   pdf_document:
@@ -538,6 +538,145 @@ knitr::kable(out,
 
 Selection bias is not of concern in the case of differential response if the groups for whom there are differences are not different in terms of the outcome variable. This was the case for sex: males responded at a significantly greater rate than females (p < 0.001), but were not statistically significantly different in regards to pessimism/optimism (ie, time frame or likelihood of eradication). In the case of researcher impact (as measured by the total number of citations), selection bias plays an important role: being highly-cited was associated both with eradication "pessimism" as well as likelihood of non-response. In other words, our pool of respondents was less highly-cited than our pool of invitees, and among respondents, those who were highly-cited tended to be more pessimistic (see Figure 3, Panel A).
 
+
+\newpage
+
+
+\noindent\fbox{%
+    \parbox{\textwidth}{%
+        Of the below two columns only one will remain in the paper: either (i) de-biasing using weighted binomial regression or (ii) de-biasing using Heckman.
+    }%
+}
+
+
+\begin{multicols}{2}
+
+\subsection*{De-biasing using weighted binomial regression}
+
+In order to de-bias sample selection, we estimated a binomial logistic regression model for the likelihood of response as a function of sex and (binned) number of citations, and then used the inverse of the selection model's predictions as weights in a simple linear model to adjust our estimates. We run weighted model to estimate the likelihood of eradication at 10, 20, 30, 40, and 50 years (employing a separate model for each time period). Figure 3 shows the difference in the aggregate perceived likelihood of eradication before and after adjusting for sample selection.
+
+
+```{r}
+# Estimate model for de-biasing sample selection without Heckman.
+response_model <- glm(responded ~ bin_citations + sex, data = df, family = binomial('logit'))
+# Use model to predict likelihood of response
+df$likelihood_of_response <- predict(response_model, df, type = 'response')
+# Use inverse of likelihood of response to assign weight for model
+df$weight <- 1 - df$likelihood_of_response
+# Run likelihood of eradication models
+for (i in seq(10, 50, 10)){
+  assign(paste0('formula_simple_years_', i),
+         as.formula(paste0('years_',
+                           i,
+                           '_numeric ~ sex + bin_citations')))
+  assign(paste0('simple_', i),
+         lm(get(paste0('formula_simple_years_', i)), data = df))
+  assign(paste0('simple_', i, '_weighted'),
+         lm(get(paste0('formula_simple_years_', i)), data = df,
+            weights = df$weight))
+
+}
+
+# Get aggregate adjusted vs unadjusted likelihoods of eradications
+simple <- data_frame(years = seq(10, 50, 10),
+                     adjusted = NA,
+                     unadjusted = NA)
+for (i in seq(10, 50, 10)){
+   simple$unadjusted[simple$years == i] <- mean(df[,paste0('years_', i, '_numeric')], na.rm = TRUE)
+   simple$adjusted[simple$years == i] <- weighted.mean(x = df[,paste0('years_', i, '_numeric')],
+                                                       w = ifelse(is.na(df$weight), 0,
+                                                                  df$weight), na.rm = TRUE)
+  # simple_model <- get(paste0('simple_', i))
+  # weighted_model <- get(paste0('simple_', i, '_weighted'))
+  
+}
+simple <- gather(simple, key, value, adjusted:unadjusted)
+g2 <- ggplot(data = simple,
+       aes(x = years,
+           y = value,
+           color = key,
+           lty = key)) +
+    geom_line(alpha = 0.8) +
+  geom_point(alpha = 0.6) +
+  theme_paper() +
+  labs(x = 'Years',
+       y = 'Likelihood of eradication',
+       subtitle = 'B: Perceived likelihood of eradication: Adjusted and unadjusted') +
+  scale_linetype_manual(name = '', values = 1:2) +
+  scale_color_manual(name = '', values = c('blue', 'darkorange'))
+x <- df %>%
+  group_by(citations = bin_citations) %>%
+  summarise(years_10 = mean(years_10_numeric, na.rm = TRUE),
+            years_20 = mean(years_20_numeric, na.rm = TRUE),
+            years_30 = mean(years_30_numeric, na.rm = TRUE),
+            years_40 = mean(years_40_numeric, na.rm = TRUE),
+            years_50 = mean(years_50_numeric, na.rm = TRUE),
+            n = length(unique(email))) %>%
+  ungroup %>%
+  gather(key, value, years_10:years_50) %>%
+  filter(!is.na(citations))
+
+cols <- colorRampPalette(c('red', 'orange', 'blue') #brewer.pal(n = 9, 'Spectral')
+                         )(length(unique(x$citations)))
+g1 <- ggplot(data = x %>% filter(!is.na(citations)),
+       aes(x = as.numeric(gsub('years_', '', key)),
+           y = value,
+           color = citations,
+           group = citations)) +
+  geom_point(alpha = 0.7) +
+  geom_line(alpha = 0.6) +
+  theme_paper() +
+  scale_color_manual(name = 'Number of citations',
+                     values = cols) +
+  labs(x = 'Years',
+       y = 'Likelihood of eradication',
+       subtitle = 'A: Difference in perceived likelihood of eradication by citations')
+```
+
+```{r, fig.height = 7.5}
+
+Rmisc::multiplot(g1, g2, cols = 1)
+
+# # Combine into a dataframe
+# simple_df <- expand.grid(bin_citations = sort(unique(df$bin_citations)),
+#                          sex = sort(unique(df$sex))) %>%
+#   mutate(simple = NA,
+#          weighted = NA)
+# out_list <- list()
+# counter <- 0
+# for(i in seq(10, 50, 10)){
+#   counter <- counter + 1
+#   this_df <- simple_df %>%
+#     mutate(years = i)
+#   simple_model <- get(paste0('simple_', i))
+#   weighted_model <- get(paste0('simple_', i, '_weighted'))
+#   this_df$simple <- predict(simple_model, this_df)
+#   this_df$weighted <- predict(weighted_model, this_df)
+#   out_list[[counter]] <- this_df
+# }
+# simple_df <- bind_rows(out_list)
+# simple_df <- simple_df %>%
+#   gather(key, value, simple:weighted)
+# # Just aggregate sexes
+# simple_df <- simple_df %>%
+#   group_by(bin_citations, years, key) %>%
+#   summarise(value = mean(value)) %>%
+#   ungroup
+# 
+# ggplot(data = simple_df,
+#        aes(x = years,
+#            y = value,
+#            color = bin_citations)) +
+#   geom_line()
+```
+
+\vfill\null
+\columnbreak
+
+\subsection*{De-biasing using Heckman} 
+
+In order to de-bias sample selection, we employed Heckman's two-step correction method. Given that sex affected response rate but not response itself, we were able to use sex as an instrumental variable, introducing it in both the selection and response models. Our selection models, which estimated the likelihood of survey response as a probit function of sex allowed us to estimate (via the Inverse Mills ratio) an expected error term for our outcome models, in which we quantify the effect of the number of citations on the perceived average likelihood of eradication at 10, 20, 30, 40, and 50 years (employing a separate model for each time period). Figure 3 shows the difference in the aggregate perceived likelihood of eradication before and after implementing Heckman's two-step model.  
+
 ```{r}
 x <- df %>%
   group_by(citations = bin_citations) %>%
@@ -566,9 +705,7 @@ x1 <- ggplot(data = x %>% filter(!is.na(citations)),
   labs(x = 'Years',
        y = 'Likelihood of eradication',
        subtitle = 'A: Difference in perceived likelihood of eradication by citations')
-```
 
-```{r}
 x2 <- 
   ggplot(data = heckman,
        aes(x = years,
@@ -585,34 +722,14 @@ x2 <-
   scale_color_manual(name = '', values = c('blue', 'darkorange'))
 ```
 
-```{r, fig.cap = 'Sample selection bias and adjustment', fig.height = 3.5}
-Rmisc::multiplot(x1, x2, cols = 2)
+```{r fig.height = 7.5}
+Rmisc::multiplot(x1, x2, cols = 1)
 ```  
 
 
-Of the below two sections only one will remain in the paper: either (i) de-biasing using weighted binomial regression or (ii) de-biasing using Heckman.
+```{r, eval = FALSE}
+# Table 2 shows the Heckman model Heckman estimates for all five models.
 
-## De-biasing using weighted binomial regression
-
-```{r}
-# Estimate model for de-biasing sample selection without Heckman.
-response_model <- glm(responded ~ bin_citations + sex, data = df, family = binomial('logit'))
-# Use model to predict likelihood of response
-df$likelihood_of_response <- predict(response_model, df, type = 'response')
-# Use inverse of likelihood of response to assign weight for model
-df$weight <- 1 - df$likelihood_of_response
-```
-
-
-## De-biasing using Heckman
-
-In order to de-bias sample selection, we employed Heckman's two-step correction method [@Heckman_1979]. Given that sex affected response rate but not response itself, we were able to use sex as an instrumental variable, introducing it in both the selection and response models. Our selection models, which estimated the likelihood of survey response as a probit function of sex allowed us to estimate (via the Inverse Mills ratio) an expected error term for our outcome models, in which we quantify the effect of the number of citations on the perceived average likelihood of eradication at 10, 20, 30, 40, and 50 years (employing a separate model for each time period). Figure 3 shows the difference in the aggregate perceived likelihood of eradication before and after implementing Heckman's two-step model.  
-
-
-
-Table 2 shows the Heckman model Heckman estimates for all five models.
-
-```{r}
 rn <- names(heck_10$coefficients)
 heck <- data_frame(Coefficient = rn,
                    `Model 10` = heck_10$coefficients,
@@ -633,7 +750,9 @@ knitr::kable(heck,
              caption = 'Heckman selection model coefficients')
 ```
 
+\end{multicols}
 
+\newpage
 
 Participants were heterogenous in their perceptions, with all of the 5 pre-determined cut-offs containing the whole range of likelihoods (0-100%), and the free-form time frame responses suggesting that eradication would be achieved in a time-frame ranging from less than a decade to never. Heterogeneity can only be partly explained by area of expertise, as the differences in perception between disciplines were minor and insignificant (see Figure 4).
 
