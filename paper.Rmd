@@ -563,9 +563,11 @@ for (i in seq(10, 50, 10)){
   assign(paste0('formula_simple_years_', i),
          as.formula(paste0('years_',
                            i,
-                           '_numeric ~ sex + bin_citations')))
-  assign(paste0('simple_', i),
-         lm(get(paste0('formula_simple_years_', i)), data = df))
+                           '_numeric ~ sex')))
+
+                           # '_numeric ~ sex + bin_citations')))
+  # assign(paste0('simple_', i),
+  #        lm(get(paste0('formula_simple_years_', i)), data = df))
   assign(paste0('simple_', i, '_weighted'),
          lm(get(paste0('formula_simple_years_', i)), data = df,
             weights = df$weight))
@@ -576,8 +578,9 @@ for (i in seq(10, 50, 10)){
 simple <- data_frame(years = seq(10, 50, 10),
                      adjusted = NA,
                      unadjusted = NA)
+simple$unadjusted <- heckman$value[heckman$key == 'Unadjusted']
 for (i in seq(10, 50, 10)){
-   simple$unadjusted[simple$years == i] <- mean(df[,paste0('years_', i, '_numeric')], na.rm = TRUE)
+   # simple$unadjusted[simple$years == i] <- mean(df[,paste0('years_', i, '_numeric')], na.rm = TRUE)
    simple$adjusted[simple$years == i] <- weighted.mean(x = df[,paste0('years_', i, '_numeric')],
                                                        w = ifelse(is.na(df$weight), 0,
                                                                   df$weight), na.rm = TRUE)
@@ -593,7 +596,7 @@ g2 <- ggplot(data = simple,
            lty = key)) +
     geom_line(alpha = 0.8) +
   geom_point(alpha = 0.6) +
-  theme_paper() +
+  theme_paper(base_size = 13) +
   labs(x = 'Years',
        y = 'Likelihood of eradication',
        subtitle = 'B: Perceived likelihood of eradication: Adjusted and unadjusted') +
@@ -620,13 +623,17 @@ g1 <- ggplot(data = x %>% filter(!is.na(citations)),
            group = citations)) +
   geom_point(alpha = 0.7) +
   geom_line(alpha = 0.6) +
-  theme_paper() +
+  theme_paper(base_size = 13) +
   scale_color_manual(name = 'Number of citations',
                      values = cols) +
   labs(x = 'Years',
        y = 'Likelihood of eradication',
        subtitle = 'A: Difference in perceived likelihood of eradication by citations')
 ```
+
+
+\vfill\null
+
 
 ```{r, fig.height = 7.5}
 
@@ -665,7 +672,6 @@ Rmisc::multiplot(g1, g2, cols = 1)
 #   geom_line()
 ```
 
-\vfill\null
 \columnbreak
 
 \subsection*{De-biasing using Heckman} 
@@ -694,7 +700,7 @@ x1 <- ggplot(data = x %>% filter(!is.na(citations)),
            group = citations)) +
   geom_point(alpha = 0.7) +
   geom_line(alpha = 0.6) +
-  theme_paper() +
+  theme_paper(base_size = 13) +
   scale_color_manual(name = 'Number of citations',
                      values = cols) +
   labs(x = 'Years',
@@ -709,13 +715,16 @@ x2 <-
            lty = key)) +
   geom_line(alpha = 0.8) +
   geom_point(alpha = 0.6) +
-  theme_paper() +
+  theme_paper(base_size = 13) +
   labs(x = 'Years',
        y = 'Likelihood of eradication',
        subtitle = 'B: Perceived likelihood of eradication: Heckman method and unadjusted') +
   scale_linetype_manual(name = '', values = 1:2) +
   scale_color_manual(name = '', values = c('blue', 'darkorange'))
 ```
+
+\vfill\null
+
 
 ```{r fig.height = 7.5}
 Rmisc::multiplot(x1, x2, cols = 1)
