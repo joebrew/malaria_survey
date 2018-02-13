@@ -6,6 +6,7 @@ output:
     latex_engine: xelatex
     includes:
       in_header: preamble.sty
+csl: elsevier-with-titles.csl
 ---
 
 
@@ -24,7 +25,8 @@ opts_chunk$set(comment = NA,
                message = FALSE, 
                error = TRUE, 
                cache = FALSE,
-               fig.align = 'center')
+               fig.align = 'center',
+               fig.pos = 'h')
 options(xtable.comment = FALSE)
 
 # Get data
@@ -263,7 +265,7 @@ Most of the current research on expert opinion regarding the feasibility of mala
 
 The general objective of eradication serves to inspire, rally funder support, motivate researchers, and focus the efforts of public health practitioners. Proponents of disease eradication point to the success of historical and current campaigns (smallpox and polio, respectively), and highlight the benefits in health and wealth to future generations. However, the opportunity cost of investments in eradication-specific interventions can be high. And the “expected value” of an investment in a binary scenario (eradication or not) is a function of the probability of the scenario’s occurrence, and the temporal lag of that occurrence. Therefore, estimating the likelihood and time frame of eradication of malaria is essential for making sound investments in health. But how can we quantify these values given the great deal of uncertainty surrounding eradication? 
 
-Many studies have shown value in expert elicitation as a means to reduce uncertainty and inform decision making [@Morgan_2014]. But experts can sometimes be mistaken, a fact implicitly recognized when patients request a "second opinion" from another doctor when facing uncertainty. Additionally, relying on only a small panel of experts for a problem as complex as malaria exposes one to more bias, just as an overly concentrated investment portfolio exposes one to more risk. As Sir Francis Galton demonstrated in his famous study in which he showed that the crowds' aggregated estimates of cow's weight formed a quasi-normal distribution centered around the true weight [@Wallis2014] [@Galton1907Voxpopuli], averaging the perceptions of many can be more accurate than taking the opinion of any single expert, since the biases of diverse viewpoints can be complementary and symbiotic. 
+Many studies have shown value in expert elicitation as a means to reduce uncertainty and inform decision making [@Morgan_2014]. But experts can sometimes be mistaken, a fact implicitly recognized when patients request a "second opinion" from another doctor when facing uncertainty. Additionally, relying on only a small panel of experts for a problem as complex as malaria exposes one to bias, just as an overly concentrated investment portfolio exposes one to more risk. As Sir Francis Galton demonstrated in his famous study in which he showed that the crowds' aggregated estimates of cow's weight formed a quasi-normal distribution centered around the true weight [@Wallis2014] [@Galton1907Voxpopuli], averaging the perceptions of many can be more accurate than taking the opinion of any single expert, since the biases of diverse viewpoints can be complementary and symbiotic. 
 
 Assessing the likelihood and time frame of eradication, therefore, requires the combination of multiple points of view. Measuring consensus and discord among disease-specific researchers from a variety of disciplines can serve as a barometer of (informed) opinion, both guiding resources and identifying areas of concern [@Keenan2013]. We propose that the aggregation of malaria researchers' perceptions regarding the time frame andlikelihood of eradication forms a probability distribution which can be used to estimate the expected value of eradication-specific investments.
 
@@ -292,8 +294,7 @@ $I_{T}$ = $P(x)_{}$ $\dfrac{B(m_{})}{m_{}}$(1 + $\delta$)$^{-T}$ -  $P(x)_{}$ $\
 
 (I) is the return on investment at time (T) (the "end of malaria"). We take the present value of the benefits multiplied by the probability of succcess minus the value of costs times the probability of success, and multiplyboth terms by the discount rate traised to T to arrive at the return on investment. 
 
-The objective of this study is to help guide the optimal distribution of health resources by gauging (expert) opinion about, estimating the likelihood of, and quantifying the time frame to malaria eradication through a systemic survey of malaria research professionals from a wide array of academic disciplines. 
-
+The objective of this study is to gauge (expert) opinion about, estimate the likelihood of, and quantify the potential time frame to malaria eradication through a systemic survey of malaria research professionals from a wide array of academic disciplines. In doing so, we aim to help guide the optimal distribution of health resources by informing estimations of the expected value of malaria eradication efforts. 
 
 
 # Methods
@@ -305,23 +306,16 @@ Content-related survey fields consisted of:
 1. Area of expertise.
 2. Perceived probability (%) of malaria eradication in 10, 20, 30, 40, and 50 years.
 3. Free choice perceived number of years until malaria eradication.
-4. Ranking of the WHO's "health system building blocks" [@manya2017] in regards to attention needed in order to achieve eradication.
-
-The purpose of final point was to introduce a prescriptive element to the researchers' responses (ie, identify potential areas of consensus in regards to the path towards eradication). 
-
-The survey was intentionally as short as possible, so as to appeal to time-pressed participants. However, supplementary data on researchers is of value for the assessing of selection bias and determinants of perception. Accordingly, we estimated the likelihood of a participant being of one of two genders (male or female) based on first name, and the likelihood of a participant being of one of five ethnicities (White, Black, Hispanic, Asian, Other) based on the provided last name. For gender estimations we used data from the North Atlantic Population Project, and U.S. government [@Lincoln]; for ethnicity, Khanna et al's bayesian prediction algorithm for the estimation of racial categories [@wru2015] [@Imai_2016] was employed.
+4. Ranking of the WHO's "health system building blocks" [@manya2017] in regards to attention needed in order to achieve eradication (the purpose of final point was to introduce a prescriptive element to the researchers' responses, ie, identify potential areas of consensus in regards to the path towards eradication).
 
 
-The searching and retrieval of information from the PubMed database was carried out using the RISmed package [@Kovalchik2015].
+The survey was intentionally as short as possible, so as to appeal to time-pressed participants. However, supplementary data on researchers is of value for the assessing of selection bias and determinants of perception. Accordingly, we estimated the likelihood of a participant being of one of two genders (male or female) based on first name, and the likelihood of a participant being of one of five ethnicities (White, Black, Hispanic, Asian, Other) based on the provided last name. For gender estimations we used data from the North Atlantic Population Project, and U.S. government [@Lincoln]; for ethnicity, Khanna et al's bayesian prediction algorithm for the estimation of racial categories [@wru2015] [@Imai_2016] was employed. The searching and retrieval of information from the PubMed database was carried out using the RISmed package [@Kovalchik2015].
 
 Survey results were first analyzed descriptively. Following Francis Galton's example, we naively take the average of all responses as the likely point estimate for event probabilities, and the totality of the responses to each numeric question as the likely confidence interval of those likelihoods and time frames.
 
 Quantitative analysis was carried out in R language [@R]. Ordinary least squares regression was employed to estimate the effect of area of expertise on the eradication pessimism-optimism (through the proxy of perceived years to eradication). All analysis code, as well as the code used for the identification and contacting of participants, is publicly available at [https://github.com/joebrew/malaria_survey](https://github.com/joebrew/malaria_survey). 
 
 Qualitative analysis of free text comments was carried out using thematic content analysis, with inductive open coding [@Markey_2014]. Participants were invited to provide "any general comments on the timeline and likelihood of global eradication".  Thematic content analysis [@Vaismoradi_2016] was employed to code responses following the 6-phase approach laid out by Braun and Clarke [@Braun2006]. The approach was inductive, used open-coding to identify latent themes, and underwent several iterations in which codes were modified, discarded and created. Using the RQDA software to assist in data management and theme coding [@Ronggui2017], four subject themes were identified. Comments were additionally coded as either descriptive (comments pertaining to the "problem" of malaria eradication) or presciptive (pertaining to potential "solutions" for eradicating malaria). Finally, free-text comments were scored for overall sentiment polarity [@sentimentr2017].
-
-This research followed the principles of the Declaration of Helsinki. The study's protocol was approved by the Scientific Committee of the Barcelona Institute for Global Health.
-
 
 
 
@@ -478,6 +472,9 @@ temp$Area[temp$Area == 'It'] <- 'Information Technology'
 Participants had a total of `r length(old_areas)` unique (self-described) areas of expertise. The five most popular were `r paste0(paste0(temp$Area[1:5], ' (', temp$Researchers[1:5], ')'), collapse = ', ')`.
 
 
+\subsection*{Quantitative results}
+
+
 Participants were asked to quantify (as a percentage) the likelihood of eradication in the next 10, 20, 30, 40, and 50 years. Most participants saw eradication as extremely unlikely in the next 10-30 years, but increasingly likely thereafter. Figure 2 shows the distribution of year-specific likelihood perceptions (panels A-E), as well as an illustration of how both likelihood and uncertainty grow over time (panel F).
 
 
@@ -496,7 +493,7 @@ ggplot(data = df,
 ```
 
 
-Respondents were qualitatively different from non-respondents. Importantly, the average number of total author-specific citations was `r round(mean(df$n_citations_total[df$responded]), digits = 2)` among respondents, but `r round(mean(df$n_citations_total[!df$responded]), digits = 2)` among non-respondents. This suggests either a tendency for more senior or impactful researchers not to respond. When examining the number of average citations per article, the difference between respondents remained: `r round(mean(df$n_citations_average[df$responded]), digits = 2)` among respondents, and `r round(mean(df$n_citations_average[!df$responded]), digits = 2)` among non-respondents, highlighting the greater impact of non-respondents relative to respondents. Males responded at a greater rate (`r round(mean(df$responded[df$sex == 'male'], na.rm = T) * 100, digits = 2)`) than females (`r round(mean(df$responded[df$sex == 'female'], na.rm = T) * 100, digits = 2)`) and those with Hispanic last names responded at a greater rate than those with last names of other ethnicities (see table).
+Respondents were qualitatively different from non-respondents. Importantly, the average number of total author-specific citations was `r round(mean(df$n_citations_total[df$responded]), digits = 2)` among respondents, but `r round(mean(df$n_citations_total[!df$responded]), digits = 2)` among non-respondents. This suggests a tendency for more senior or impactful researchers not to respond. When examining the number of average citations per article, the difference between respondents remained: `r round(mean(df$n_citations_average[df$responded]), digits = 2)` among respondents, and `r round(mean(df$n_citations_average[!df$responded]), digits = 2)` among non-respondents, highlighting the greater impact of non-respondents relative to respondents. Males responded at a greater rate (`r round(mean(df$responded[df$sex == 'male'], na.rm = T) * 100, digits = 2)`) than females (`r round(mean(df$responded[df$sex == 'female'], na.rm = T) * 100, digits = 2)`) and those with Hispanic last names responded at a greater rate than those with last names of other ethnicities (table 1).
 
 ```{r}
 # function to get response rate per categorical variable
@@ -551,10 +548,8 @@ knitr::kable(out,
 Selection bias is not of concern in the case of differential response if the groups for whom there are differences are not different in terms of the outcome variable. This was the case for sex: males responded at a significantly greater rate than females (p < 0.001), but were not statistically significantly different in regards to pessimism/optimism (ie, time frame or likelihood of eradication). In the case of researcher impact (as measured by the total number of citations), selection bias plays an important role: being highly-cited was associated both with eradication "pessimism" as well as likelihood of non-response. In other words, our pool of respondents was less highly-cited than our pool of invitees, and among respondents, those who were highly-cited tended to be more pessimistic (see Figure 3, Panel A).
 
 
-\subsection*{De-biasing sample selection}
 
-
-In order to de-bias sample selection, we employed Heckman's two-step correction method as well a more simple binomial logistic regression model to estimate the likelihood of response as a function of sex and (binned) number of citations. To the extent that the two methods presented nearly identical value, we present here the results of latter. Having estimated the odds of survey participation, we then used the inverse of the selection model's predictions as weights in a simple linear model to adjust our estimates. We run weighted model to estimate the likelihood of eradication at 10, 20, 30, 40, and 50 years (employing a separate model for each time period). Figure 3 shows both the aggregated perceived likelihood of eradication over time by number of publications (panel A) as well as the difference in the aggregate perceived likelihood of eradication for the entire sample before and after adjusting for sample selection (panel B).
+In order to de-bias sample selection, we employed Heckman's two-step correction method as well as simple binomial logistic regression model to estimate the likelihood of response as a function of sex and (binned) number of citations. To the extent that the two methods presented nearly identical value, we present here the results of the latter. Having estimated the odds of survey participation, we then used the inverse of the selection model's predictions as weights in a simple linear model to adjust our estimates. We run a separate weighted model to estimate the likelihood of eradication at 10, 20, 30, 40, and 50 years. Figure 3 shows both the aggregated perceived likelihood of eradication over time by number of publications (panel A) as well as the difference in the aggregate perceived likelihood of eradication for the entire sample before and after adjusting for sample selection (panel B).
 
 
 ```{r}
@@ -605,7 +600,7 @@ g2 <- ggplot(data = simple,
   theme_paper(base_size = 13) +
   labs(x = 'Years',
        y = 'Likelihood',
-       subtitle = 'Panel B') +
+       subtitle = 'B') +
   scale_linetype_manual(name = '', values = 1:2) +
   scale_color_manual(name = '', values = c('blue', 'darkorange'))
 x <- df %>%
@@ -634,7 +629,7 @@ g1 <- ggplot(data = x %>% filter(!is.na(citations)),
                      values = cols) +
   labs(x = 'Years',
        y = 'Likelihood',
-       subtitle = 'Panel A')
+       subtitle = 'A')
 ```
 
 
@@ -811,9 +806,9 @@ Of the `r length(which(df$responded))` who responded to the survey, `r length(wh
 
 1. *Solutions*: Comments pertaining to the innovations required to achieve eradication, priorities, and the desirability of certain approaches.
 
-2. *Systematic challenges*: comments pertaining to political, social, environmental or logistical issues related to eradication.
+2. *Systemic challenges*: comments pertaining to political, social, environmental or logistical issues related to eradication.
 
-3. *Complexity*: comments which of focus on the multi-dimensional components of eradication.
+3. *Complexity*: comments which focus on the multi-dimensional components of eradication.
 
 
 Comments were also classified as descriptive or prescriptive. A majority (`r round(320 / 540 * 100, digits = 2)`%) were descriptive. Descriptive commenters were more pessimistic (in regards to perceived years until eradication) than prescriptive commenters, though this difference did not reach the level of statistical significance (p = 0.21). Descriptive comments also received sentiment polarity scores which were more negative than prescriptive comments, although again this difference did not reach the level of statistical significance (p = 0.18).
@@ -832,13 +827,13 @@ Many noted the need to "overcome the challenge of drug resistance". More than 10
 It will be very difficult to eradicate malaria... not because we don't have the technologies, which we already have... the problem is politics. Malaria doesn't stop in (sic) borders of a country and it would take a joint effort of a lot of political leaders to get programs in place to fight malaria. Unfortunately I don't see this happening anytime soon.
 \end{quote}
 
-Others echoed the sentiment, with many comments focusing on the need of strong surveillance and treatment delivery systems. Many commenters focused on other reasons for stagnating progress, such as "weak or failing health systems...due to political unwillingness or conflict".  Comments coded as "systemic" tended to be descriptive and more pessimistic than others. Many noted that malaria is a "disease of poverty", with "social injustice" as the root cause. Some made the sequential argument that "eradication of poverty" must preceed disease eradication. Along the same lines, one commenter wrote:
+Others echoed the sentiment, with many comments focusing on the need of strong surveillance and treatment delivery systems. Many commenters focused on other reasons for stagnating progress, such as "weak or failing health systems...due to political unwillingness or conflict".  Many noted that malaria is a "disease of poverty", with "social injustice" as the root cause. Some made the sequential argument that "eradication of poverty" must preceed disease eradication. Along the same lines, one commenter wrote:
 
 \begin{quote}
 Eradication requires a full systems-wide approach, not a disease-specific approach. The eradication of smallpox was a triumph of management, not medicine or technology.
 \end{quote}
 
-Another noted that the survey "left off the list the most important factor - economic development". Many echoed the sentiment, stating that "with no economic development, you cannot have eradication" and that poverty is the "cause" of malaria. As with the "systemic challenges" of eradication, comments which were coded as poverty tended to be descriptive rather than prescriptive.
+Another noted that the survey "left off the list the most important factor - economic development". Many echoed the sentiment, stating that "with no economic development, you cannot have eradication" and that poverty is the "cause" of malaria. Comments coded as "systemic" tended to be descriptive and more pessimistic than others. 
 
 **Complexity** was a relatively rare category (<20\% of all comments), those whose comments were coded as the "complexity" category were more pessimistic than average in regards to the timeline and likelihood of eradication. Many commenters highlighted the inherent challenges in the epidemiology of malaria, such as the changing dynamics of malaria transmission, the resilience of the parasite and vector, climate change, and the inability to aim interventions accurately with an "ever-moving target". The potential for adaptation was highlighted in reference both to the mosquito as well as the parasite itself. Many comments addressed the fact that the conversation on eradication is largely taking place within the public health community, whereas the causes of malaria endemicity are largely orthogonal to public health interventions, "going beyond the health sector". Several commenters pointed out the multitude of prerequisite conditions for eradication to even be considered feasible:
 
@@ -853,22 +848,22 @@ Many commenters thought that the terms "eradication" and "malaria" were so compl
 Eradication is a different objective than elimination. Elimination means that the disease is not endemic but could reappear even in a country like Norway if infrastructure breaks down. Elimination may be possible in poor endemic countries, following socioeconomic development. Eradication means that the parasite disapears from the planet, which is not realistic...
 \end{quote}
 
-Comments questioning the utility of eradication as a concept or goal tended to be skeptical of the its feasibility. Largely, they were prescriptive, advocating for a re-framing of the conversation so that the focus was not on an "arbitrary" goal like eradication, but rather on scaling up control and making region-specific progress.
+Comments questioning the utility of eradication as a concept or goal tended to be skeptical of its feasibility. Largely, they were prescriptive, advocating for a re-framing of the conversation so that the focus was not on an "arbitrary" goal like eradication, but rather on scaling up control and making region-specific progress.
 
 
 
 # Discussion
 
-Our survey reveals a notable gap between the public discourse on malaria eradication, and those views held (largely privately) by malaria researchers. Approximately three-quarters of respondents believe that malaria will not be eradicated in the next 50 years; in other words, assuming our pool of respondents is of typical post-PhD age, most believe they will not live to see eradication. When adjusted for selection bias, the perceived likelihood of eradication 50 years from now remains similarly low, but estimates for shorter-term eradication are even lower.
+Approximately three-quarters of respondents believe that malaria will not be eradicated in the next 50 years; in other words, assuming our pool of respondents is of typical post-PhD age, most believe they will not live to see eradication. When adjusted for selection bias, the perceived likelihood of eradication 50 years from now remains similarly low, but estimates for shorter-term eradication are even lower.
 
 
-If we take the pooled opinions of researchers, as revealed through this survey, as the best approximation of truth available, then the disconnect between public discourse on malaria eradication and private opinion is troubling. This has important implications for spending in public health, since the attention and resources of funders, researchers and government agencies are directed to those areas where a result is expected.
+If we take the pooled opinions of researchers, as revealed through this survey, as the best approximation of truth available, then the disconnect between public discourse on malaria eradication and private opinion is noteworthy This has important implications for spending in public health, since the attention and resources of funders, researchers and government agencies are directed to those areas where a result is expected.
 
 In regards to differences by academic discipline, it is important to note that diversity within disciplines was greater than diversity between them. That said, one might surmise as to why disciplines at the extremes differed. Chemists, on average, reported that eradication will be achieved in less than 40 years, whereas economists thought it would take a full ten years more.  The collective optimism in the field of chemistry may be attributable to recent advances in drug development and insecticides, whereas economists may be more pessimistic due to concerns such as free-riding when it comes to global public goods [@barrett] [@Bodansky_2012]. This study was not designed to generate inference regarding reasons why disciplines might differ in perception, but it does suggest further lines of research.
 
 ## Limitations
 
-There are several reasons to be skeptical that the combined "wisdom of crowds" of malaria researchers is a reliable indicator of truth. First, academic researchers are specialists - their narrow, field-specific view of eradication's feasibility is arguably less reliable than the more "global" views of large institutions. Though crowds have been found to be more "wise" than individuals in many cases, the application of a wisdom of crowds approach is not suitable to all classes of problems [@Mannes_2014]. Crowds can be susceptible to social biases [@Lorenz_2011] (although this survey's anonimity largely protects against this issue), and other biases may come in to play, especially given that our study was of a crowd of "specialists", rather than the population as a whole.
+There are several reasons to be skeptical that the combined opinions of malaria researchers is a reliable indicator of truth. First, academic researchers are specialists - their narrow, field-specific view of eradication's feasibility is arguably less reliable than the more "global" views of large institutions. Though crowds have been found to be more "wise" than individuals in many cases, the application of a wisdom of crowds approach is not suitable to all classes of problems [@Mannes_2014]. Crowds can be susceptible to social biases [@Lorenz_2011] (although this survey's anonimity largely protects against this issue), and other biases may come in to play, especially given that our study was of a crowd of "specialists", rather than the population as a whole.
 
 Among these biases, four are worth mentioning specifically. (1) "Conjunction fallacy" suggests that the general goal of eradication may seem less likely than the sum of the goals of country-specific elimination. (2) A (reverse) variant of the "hot hand fallacy", in which researchers may mistakenly base their assessment of current chances of eradication on previous failures. (3) Parkinson's law of triviality suggests that researchers may disproportionately see the challenges of their own research (antimalarial drug resistance, etc.) as larger or more relevant to the global eradication campaign than they really are. (4) Finally, and ironically, "optimism bias" may play a perverse role in researchers' responses; though eradication is certainly a goal desired by all, one could argue that malaria research specialists subconciously realize that they actually stand to lose out profesionally in the case of eradication.
 
@@ -881,12 +876,12 @@ This study included the first authors of indexed journals. Though certainly a gr
 ## Conclusion
 
 
-Our survey attempted to quantify the likelihood of and time frame to malaria eradication by gauging the collective opinion of malaria researchers. Our survey shows that the opinions of malaria researchers appear to diverge from those of malaria programme financiers in regards to the feasibility and timeframe of eradication, with researchers expressing more pessism than the institutions and individuals which finance and oversee global eradication efforts. The causes for pessimism are diverse, but common themes were the need for innovation, systemic challenges, and the complexity of the disease and its transmissio. 
+Our survey attempted to quantify the likelihood of, and time frame to, malaria eradication by gauging the collective opinion of malaria researchers. Our survey shows that the opinions of malaria researchers appear to diverge from those of malaria programme financiers in regards to the feasibility and timeframe of eradication, with researchers expressing more scepticism than the institutions and individuals which finance and oversee global eradication efforts. The causes for scepticism are diverse, but common themes were the need for innovation, systemic challenges, and the complexity of the disease and its transmission. 
 
 The implication of these results are three-fold: (1) that those working or investing in eradication-specific campaigns should factor in researchers' perceived low likelihood and long time frame when calculating those campaigns' expected value; (2) that champions of near-term eradication may need to make a more compelling case to malaria researchers of eradication's feasibility, in order to better focus and inspire the latter; and (3) that discord between malaria researchers and institutions regarding eradication suggests a need for open discussion and concensus-making, so that efforts and focus are directed appropriately.
 
 
-We have strived to present the results of our study without insinuation regarding the "true" feasibility and timeframe of eradication, and only time will tell whether the collective "wisdom" of researchers was worth adhering to or not. If the research community is unduly pessimistic, efforts should be made to convince them that eradication is more feasible than they realize (so that resources are directed accordingly). If, on the other hand, collective wisdom is a better forecasting agent than the stated objectives of global health leaders and institutions, then it is important to recognize the sad truth that we are likely further from eradication than we would like to be. In this case, though the discourse on eradication can be motivating and inspiring, resources should be directed in a manner that reflects an intended outcome's likelihood of occurrence.
+We have strived to present the results of our study without insinuation regarding the "true" feasibility and timeframe of eradication, as only time will tell whether the collective "wisdom" of researchers was worth adhering to or not. If the research community is unduly sceptical, efforts should be made to convince them that eradication is more feasible than they realize (so that resources are directed accordingly). If, on the other hand, collective wisdom of specialists is a better forecasting agent than the stated objectives of global health leaders and institutions, then it is important to recognize the sad truth that we are likely further from eradication than we would like to be. In this case, though the discourse on eradication can be motivating and inspiring, resources should be directed in a manner that reflects the intended outcome's likelihood of occurrence.
 
 
 
