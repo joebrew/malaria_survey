@@ -276,25 +276,7 @@ A great deal of previous research from serveral endemic areas already covers the
 
 Though the case-specific marginal cost of eradication can be expected to be high (relative to a simple control approach), successful eradication would mean massive recurring savings in the long-term [@Barrett2013]. However, to the extent that the case-specific marginal cost of prevention in an eradication campaign is high, estimating the likelihood of success is fundamental to the correct distribution of resources, particularly in low-income environments. 
 
-In other words, the rational assignment of resources for malaria eradication campaigns hinges on the expected value of those campaigns. We can describe this relationship below: 
-
-\begin{center}
-$I_{T}$ = $P(x)_{}$ $\dfrac{B(m_{}*p)}{m_{}*p}$(1 + $\delta$)$^{-T}$ -  $P(x)_{}$ $\dfrac{C(m_{}*p)}{m_{}*p}$ (1 + $\delta$)$^{-T}$
-\end{center}
-
-\begin{itemize}
-\item $ I $ is the return on investment
-\item $ m $ is the prevalence of malaria
-\item $ p $ is the population size
-\item $ x $ is whether eradication has been achievied
-\item $ T $ is the time-frame (to both costs and benefits)
-\item $ P $ is the probability (of eradication)
-\item $ B $ is the benefit of preventing malaria
-\item $ C $ is the cost of preventing malaria
-\item $ \delta $ represents both the discount rate and opportunity cost
-\end{itemize}
-
-(I) is the return on investment at time (T) (the "end of malaria"). We take the present value of the benefits multiplied by the probability of succcess minus the value of costs times the probability of success, and multiplyboth terms by the discount rate traised to T to arrive at the return on investment. 
+In other words, the rational assignment of resources for malaria eradication campaigns hinges on the expected value of those campaigns, the latter being a direct function of the discount rate applied to future benefits (which this study does not aspire to assess) and the probability of "success" (ie, eradication). Holding constant factors such as the cost of eradication and the benefits of achieving it, the return on investment is a linear function of eradication's probability. Given this, estimating probability is crucial to evaluating if and when attempts at eradication should be undertaken.
 
 The objective of this study is to gauge (expert) opinion about, estimate the likelihood of, and quantify the potential time frame to malaria eradication through a systematic online survey of malaria research professionals from a wide array of academic disciplines. In doing so, we aim to help guide the optimal distribution of health resources by informing estimations of the expected value of malaria eradication efforts. 
 
