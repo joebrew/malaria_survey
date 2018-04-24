@@ -24,7 +24,7 @@
 \usepackage[margin=1in]{geometry}
 \usepackage{hyperref}
 \hypersetup{unicode=true,
-            pdftitle={Researchers' perceptions of malaria eradication: findings from a mixed-methodsanalysis of a large online survey},
+            pdftitle={Researchers' perceptions of malaria eradication: findings from a mixed-methods analysis of a large online survey},
             pdfborder={0 0 0},
             breaklinks=true}
 \urlstyle{same}  % don't use monospace font for urls
@@ -74,7 +74,7 @@
 
 \setlength{\droptitle}{-2em}
   \title{Researchers' perceptions of malaria eradication: findings from a
-mixed-methodsanalysis of a large online survey}
+mixed-methods analysis of a large online survey}
   \pretitle{\vspace{\droptitle}\centering\huge}
   \posttitle{\par}
   \author{}
@@ -114,18 +114,14 @@ mixed-methodsanalysis of a large online survey}
 
 \usepackage{soul}
 
+\usepackage{setspace}
+\doublespacing
+
+\usepackage[right, modulo]{lineno}
+\linenumbers
+
 \begin{document}
 \maketitle
-
-\begin{center}
-\begin{large}
-
-Joe Brew\footremember{isglobal}{Barcelona Institute for Global Health: c/ Rosselló, 132, 5è 2a. 08036, Barcelona, Spain}\footremember{cism}{Centro de Investigação em Saúde de Manhiça: Vila da Manhiça, Bairro Cambeve, Rua 12, Distrito da Manhiça, CP 1929, Maputo, Mozambique}\footremember{vu}{VU University Amsterdam: De Boelelaan 1105, 1081 HV Amsterdam, Netherlands}, Menno Pradhan\footrecall{vu}\footremember{uva}{University of Amsterdam: REC E, Roetersstraat 11, Amsterdam, Netherlands}, Jacqueline Broerse\footrecall{vu}, Elisa Sicuri\footrecall{isglobal}\footremember{icl}{Imperial College London: South Kensington Campus, London SW7 2AZ, U.K.}\footrecall{cism}
-
-\end{large}
-\end{center}
-
-\vspace{5mm}
 
 \begin{center}
 \textbf{Abstract}  
@@ -136,9 +132,11 @@ Joe Brew\footremember{isglobal}{Barcelona Institute for Global Health: c/ Rossel
 \begin{center}
 \begin{changemargin}{3cm}{3cm} 
 
-Quantifying an event's probability and time frame is essential for calculating its expected value. Uuncertainty regarding feasibility makes it difficult for policymakers and public health practitioners to forecast the return on investment of malaria eradication. Since the opportunity cost of investments in eradication-specific interventions can be high - particularly in contexts with other urgent health priorities - understanding eradication's expected value is essential. In a large online survey of malaria researchers (n = 844), we query perceptions regarding the likelihood and time frame of eradication. We assess pessimism/optimism (via the proxy of years-to-eradication), and adjust for selection bias. We also carry out a qualitative analysis of the free-form comments provided by 61\% of respondents. Our results show that researchers are skeptical of the feasibility of near-term malaria eradication, with most believing that eradication will not be achieved for 50 years or more.
+Quantifying an event's probability and time frame is essential for calculating its expected value. Uncertainty regarding feasibility makes it difficult for policymakers and public health practitioners to forecast the return on investment of malaria eradication. Since the opportunity cost of investments in eradication-specific interventions can be high - particularly in contexts with other urgent health priorities - understanding eradication's expected value is essential. In a large online survey of malaria researchers (n = 844), we query perceptions regarding the likelihood and time frame of eradication. We assess perceived years to and likelihood of eradication, and adjust for selection bias. We also carry out a qualitative analysis of the free-form comments provided by 61\% of respondents. Our results show that researchers are skeptical of the feasibility of near-term malaria eradication, with most believing that eradication will not be achieved for 50 years or more.
 \end{changemargin}
 \end{center}
+
+\vspace{10mm}
 
 \noindent\fbox{%
     \parbox{\textwidth}{%
@@ -150,9 +148,11 @@ Quantifying an event's probability and time frame is essential for calculating i
           \item Identifies challenges pertaining to eradication through qualitative analysis
         \end{itemize}
       \subsection*{Keywords}
-        Malaria, eradication, elimination, mixed methods, survey, crowdsourcing 
+        Malaria; eradication; elimination; mixed methods; survey; crowdsourcing 
     }%
 }
+
+\newpage
 
 \section{Introduction}\label{introduction}
 
@@ -188,11 +188,11 @@ from 2015 through 2030 (Figure 1).
 
 \begin{figure}[h]
 
-{\centering \includegraphics{paper_files/figure-latex/unnamed-chunk-4-1} 
+{\centering \includegraphics{paper_files/figure-latex/unnamed-chunk-3-1} 
 
 }
 
-\caption{Countries with malaria: Observed and WHO objectives}\label{fig:unnamed-chunk-4}
+\caption{Countries with malaria: Observed and WHO objectives}\label{fig:unnamed-chunk-3}
 \end{figure}
 
 Even in areas of high endemicity, advances in immunology, parasitology,
@@ -235,58 +235,55 @@ investment of each dollar led to a return of greater than 400 (Barrett,
 2006); unlike smallpox (for which analysis was able to be
 retrospectively constructed based on observed costs and benefits), in
 the case of a prevalent disease, forecasting models have to be used in
-order to prospectively estimate the value of an investment.
-\st{Additionally the estimated impact of malaria on economic indicators is heterogeneous, with singificant impact in areas of Sub-Saharan Africa - where the endemicity is high - and little to no impact in areas of low endemicity}
+order to prospectively estimate the value of an investment. Additionally
+the estimated impact of malaria on economic indicators is heterogeneous,
+with singificant impact in areas of Sub-Saharan Africa - where the
+endemicity is high - and little to no impact in areas of low endemicity
 (Cutler et al., 2010) (Barofsky et al., 2015).
 
 The general objective of eradication serves to inspire, rally funder
 support, motivate researchers, and focus the efforts of public health
-practitioners. But to the extent that malaria eradication (by
-definition) has never occurred, the parameters needed for a ex-post
-cost-benefit analysis are unknown. Nonetheless, prospectively estimating
-eradication's return on investment is crucial to deciding when and how
-to pursue the goal, especially in light of the high direct and
-opportunity costs of eradication-specific interventions. One approach to
-cost-benefit analysis is the use of mathematical and stochastic models.
-These have been applied to diseases which are closer to eradication than
-malaria, since the uncertainty around model input parameters is less,
-requiring fewer cascading assumptions in order to present possible
-comparative scenarios. For example, Kastner et al. were able to describe
-4 relatively realistic pathways to Lympathic Filariasis eradication, as
-well as the pre-requisite role and magnitude of certain interventions
-(Kastner et al., 2015). A similar modeling framework was then used to
-estimate the cost of eradication (Kastner et al., 2017). A recent
-modeling analysis on onchocerciasis eradication, based on a disease
-transmission model, showed that the costs of elimination (relative to
-staying in ``control mode'') in Africa would be far lower even in the
-short term, thanks to the improvements it would lead to in both
-treatment times and prevented surveillance costs. Given the relative
-proximity of eradication, and the narrow geographic scope, the authors
-were also able to estimate the timeline to eradication (Kim et al.,
-2017).
+practitioners. The recently established Lancet Commission on malaria
+eradication states that ``eradication is the only acceptable end goal''
+(while acknowledging that there exists ``scepticism about {[}its{]}
+technical feasibility'') (Chen et al., 2018). To the extent that malaria
+eradication (by definition) has never occurred, the parameters needed
+for a ex-post cost-benefit analysis are unknown. Nonetheless,
+prospectively estimating eradication's return on investment is crucial
+to deciding when and how to pursue the goal, especially in light of the
+high direct and opportunity costs of eradication-specific interventions.
+One approach to economic evaluation is the use of mathematical and
+stochastic models. These have been applied to diseases which are closer
+to eradication than malaria, since the uncertainty around model input
+parameters is less, requiring fewer cascading assumptions in order to
+present possible comparative scenarios. For example, Kastner et al. were
+able to describe 4 relatively realistic pathways to Lympathic Filariasis
+eradication, as well as the pre-requisite role and magnitude of certain
+interventions (Kastner et al., 2015). A similar modeling framework was
+then used to estimate the cost of eradication (Kastner et al., 2017). A
+recent modeling analysis on onchocerciasis eradication, based on a
+disease transmission model, showed that the costs of elimination
+(relative to staying in ``control mode'') in Africa would be far lower
+even in the short term, thanks to the improvements it would lead to in
+both treatment times and prevented surveillance costs. Given the
+relative proximity of eradication, and the narrow geographic scope, the
+authors were also able to estimate the timeline to eradication (Kim et
+al., 2017).
 
-This level of detail and specificity in modeling the cost-benefit
+This level of detail and specificity in the economic evaluation
 landscape of malaria eradication, unfortunately, is not possible (or at
 least not commonly undertaken), given its high prevalence and
 epidemiological complexity. In fact, there are no mathematical models
 (to the authors' knowledge) estimating the likelihood and time frame of
-eradication, or its derivative cost-benefit ratio. While a great deal of
-rigorous studies exist forecasting the effect of certain tools and
-strategies relative to alternatives (Brady et al., 2017) or aimed at
-regional disease elimination (Kim et al., 2015), these analyses do not
-endeavor to estimate the generalization of those tools or strategies to
-other areas. Globally, where mathematical modeling has been used for the
-purposes of forecasting the future epidemiology of malaria, the methods
-have generally been aimed at optimizing elimination methods (Slater et
-al., 2015), determining whether a strategy is scalable (Brady et al.,
-2017), guiding funding and drug development (Patouillard et al., 2017)
-(Slater et al., 2017), or comparing a range of hypothetical morbidity
-scenarios (Winskill et al., 2017), rather than assessing the likelihood
-of or time until the occurrence of those scenarios. In other words,
-researchers are (rightfully) focused on the \emph{how} of eradication,
-rather than the forecasting of its timeframe or likelihood, the lack of
-attention paid to the latter likely being a reflection of its
-complexity, not lack of importance.
+eradication, or its derivative cost-benefit ratio. Globally, where
+mathematical modeling has been used for the purposes of forecasting the
+future epidemiology of malaria, the methods have generally been aimed at
+optimizing elimination methods (Slater et al., 2015), determining
+whether a strategy is scalable (Brady et al., 2017), guiding funding and
+drug development (Patouillard et al., 2017) (Slater et al., 2017), or
+comparing a range of hypothetical morbidity scenarios (Winskill et al.,
+2017), rather than assessing the likelihood of or time until the
+occurrence of those scenarios.
 
 To the extent that (i) estimating eradication's likelihood and timeframe
 is essential to forecasting the cost-benefit ratio of eradication
@@ -297,17 +294,15 @@ accurate assessment of something as complex as a company's value,
 aggregating perceptions may be a useful tool for tackling the complexity
 of malaria eradication. Many studies have shown value in expert
 elicitation as a means to reduce uncertainty and inform decision making
-(Morgan, 2014).
-\st{But experts can sometimes be mistaken, a fact implicitly recognized when patients request a "second opinion" from another doctor when facing uncertainty. Additionally, relying on only a small panel of experts for a problem as complex as malaria exposes one to bias, just as an overly concentrated investment portfolio exposes one to more risk.}
-As Sir Francis Galton demonstrated in his famous study in which he
-showed that the crowds' aggregated estimates of cow's weight formed a
-quasi-normal distribution centered around the true weight (Wallis, 2014)
-(Galton, 1907), averaging the perceptions of many can be more accurate
-than taking the opinion of any single expert, since the biases of
-diverse viewpoints can be complementary and symbiotic. Measuring
-consensus and discord among disease-specific researchers from a variety
-of disciplines can serve as a barometer of (informed) opinion, both
-guiding resources and identifying areas of concern (Keenan et al.,
+(Morgan, 2014). As Francis Galton demonstrated in his famous study in
+which he showed that the crowds' aggregated estimates of cow's weight
+formed a quasi-normal distribution centered around the true weight
+(Wallis, 2014) (Galton, 1907), averaging the perceptions of many can be
+more accurate than taking the opinion of any single expert, since the
+biases of diverse viewpoints can be complementary and symbiotic.
+Measuring consensus and discord among disease-specific researchers from
+a variety of disciplines can serve as a barometer of (informed) opinion,
+both guiding resources and identifying areas of concern (Keenan et al.,
 2013).
 
 The optimal assignment of resources for malaria eradication campaigns
@@ -321,6 +316,14 @@ probability (assuming a \textless{} 100\% likelihood of success). Given
 this, estimating these parameters is crucial to evaluating if and when
 attempts at eradication should be undertaken.
 
+Though the case-specific marginal cost of eradication can be expected to
+be high (relative to a simple control approach), successful eradication
+would mean massive recurring savings in the long-term (Barrett, 2013).
+However, to the extent that the case-specific marginal cost of
+prevention in an eradication campaign is high, estimating the likelihood
+of success is fundamental to the correct distribution of resources,
+particularly in low-income environments.
+
 We propose that the aggregation of malaria researchers' perceptions
 regarding the time frame and likelihood of eradication forms a
 probability distribution which can be used to estimate the expected
@@ -331,10 +334,6 @@ systematic online survey of malaria research professionals from a wide
 array of academic disciplines. In doing so, we aim to help guide the
 optimal distribution of health resources by informing estimations of the
 expected value of malaria eradication efforts.
-
-\st{A great deal of previous research from serveral endemic areas already covers the cost per case prevented [@Sicuri2011] [@Silumbe2015] [@Btto2016] [@IlungaIlunga2014] [@Dalaba2015]. Likewise, literature exists which could serve as a model for quantifying the location-specific opportunity costs associated with funneling funds towards malaria eradication [@Stuckey2014] [@White2011] [@Korenromp2012]. The correct discount rate for estimating the value of future lives saved is more of a philosophical question than an economic one. This leaves only the probability and time-frame to eradication, questions which have been addressed anecdotally, but never answered quantitatively.}
-
-\st{Though the case-specific marginal cost of eradication can be expected to be high (relative to a simple control approach), successful eradication would mean massive recurring savings in the long-term [@Barrett2013]. However, to the extent that the case-specific marginal cost of prevention in an eradication campaign is high, estimating the likelihood of success is fundamental to the correct distribution of resources, particularly in low-income environments. }
 
 \section{Methods}\label{methods}
 
@@ -416,11 +415,11 @@ polarity (Rinker, 2017).
 
 \begin{figure}[h]
 
-{\centering \includegraphics{paper_files/figure-latex/unnamed-chunk-5-1} 
+{\centering \includegraphics{paper_files/figure-latex/unnamed-chunk-4-1} 
 
 }
 
-\caption{Perceptions of likelihood of eradication}\label{fig:unnamed-chunk-5}
+\caption{Perceptions of likelihood of eradication}\label{fig:unnamed-chunk-4}
 \end{figure}
 
 A total of 884 researchers participated in the survey from the 7918
@@ -514,11 +513,11 @@ perceived likelihood of near-term eradcation would have been much lower.
 
 \begin{figure}[h]
 
-{\centering \includegraphics{paper_files/figure-latex/unnamed-chunk-11-1} 
+{\centering \includegraphics{paper_files/figure-latex/unnamed-chunk-10-1} 
 
 }
 
-\caption{Aggregated perceived likelihood of eradication over time, adjusted for sample selection and unadjusted.}\label{fig:unnamed-chunk-11}
+\caption{Aggregated perceived likelihood of eradication over time, adjusted for sample selection and unadjusted.}\label{fig:unnamed-chunk-10}
 \end{figure}
 
 \subsection{Qualitative analysis of
@@ -547,10 +546,10 @@ Comments were also classified as descriptive or prescriptive. A majority
 (59.26\%) were descriptive. Descriptive commenters were more pessimistic
 (in regards to perceived years until eradication) than prescriptive
 commenters, though this difference did not reach the level of
-statistical significance (p = 0.21). Descriptive comments also received
-sentiment polarity scores which were more negative than prescriptive
-comments, although again this difference did not reach the level of
-statistical significance (p = 0.18).
+statistical significance (p = 0.21 using Pearson's Chi-squared test).
+Descriptive comments also received sentiment polarity scores which were
+more negative than prescriptive comments, although again this difference
+did not reach the level of statistical significance (p = 0.18).
 
 In regards to \textbf{solutions}, comments largely pertained to the
 necessity of further technological advances and innovations. One
@@ -726,26 +725,24 @@ This study included the first authors of indexed journals. Though
 certainly a group with important knowledge related to malaria, this
 misses malaria control program employees, health agency workers, and
 other stakeholders. Their experiences and viewpoints may be different
-from those of academics, and arguably more relevant. Additionally, in
-public health journals, first authors are often more junior than their
-collaborators. By focusing solely on first authors, we may have
-unintentionally created a sample which is qualitatively different than
-the true universe of malaria researchers; to the extent that in our
-result pool researchers with less experience (as represented through
-publications) tended to be more ``optimistic'' regarding eradication, it
-is reasonable to assume that the restriction of first authors may have
-lead to an overly optimistic sample, making the results of the survey
-even more striking.
+from those of academics, and arguably more relevant. Our de-biasing
+method accounts for different response rates of ``senior'' vs.
+``junior'' researchers, but does not take into account the fact that
+first authors are generally more junior than senior authors (ie, the
+pool from which we sampled may have been biased itself). To the extent
+that in our results suggests that those with less experience (as
+represented through publications) tended to be more ``optimistic''
+regarding eradication, it is reasonable to assume that the restriction
+of first authors may have lead to an overly optimistic sample, making
+the results of the survey even more striking.
 
 \subsection{Conclusion}\label{conclusion}
 
-Our survey attempted to quantify the likelihood of, and time frame to,
-malaria eradication by gauging the collective opinion of malaria
-researchers. The findings of our survey show researchers expressing
-hesitance about the likelihood of eradication and suggesting a long time
-frame until it is achieved. The causes for scepticism are diverse, but
-common themes were the need for innovation, systemic challenges, and the
-complexity of the disease and its transmission.
+The findings of our survey show researchers expressing hesitance about
+the likelihood of eradication and suggesting a long time frame until it
+is achieved. The causes for scepticism are diverse, but common themes
+were the need for innovation, systemic challenges, and the complexity of
+the disease and its transmission.
 
 The implication of these results are two-fold: (1) that those working or
 investing in eradication-specific campaigns, as well as those modeling
@@ -816,6 +813,11 @@ Braun, V., Clarke, V., 2006. Using thematic analysis in psychology.
 Qualitative Research in Psychology 3, 77--101.
 \url{https://doi.org/10.1191/1478088706qp063oa}
 
+\hypertarget{ref-Chen2018}{}
+Chen, I., Cooney, R., Feachem, R.G.A., Lal, A., Mpanju-Shumbusho, W.,
+2018. The lancet commission on malaria eradication. The Lancet 391,
+1556--1558. \url{https://doi.org/10.1016/s0140-6736(18)30911-5}
+
 \hypertarget{ref-Churcher_2014}{}
 Churcher, T.S., Cohen, J.M., Novotny, J., Ntshalintshali, N., Kunene,
 S., Cauchemez, S., 2014. Measuring the path toward malaria elimination.
@@ -868,12 +870,6 @@ T.C., Lietman, T.M., 2013. Elimination and eradication of neglected
 tropical diseases with mass drug administrations: A survey of experts.
 PLoS Negl Trop Dis 7, e2562.
 \url{https://doi.org/10.1371/journal.pntd.0002562}
-
-\hypertarget{ref-Kim2015}{}
-Kim, Y.E., Sicuri, E., Tediosi, F., 2015. Financial and economic costs
-of the elimination and eradication of onchocerciasis (river blindness)
-in africa. PLOS Neglected Tropical Diseases 9, e0004056.
-\url{https://doi.org/10.1371/journal.pntd.0004056}
 
 \hypertarget{ref-Kim2017}{}
 Kim, Y.E., Stolk, W.A., Tanner, M., Tediosi, F., 2017. Modelling the
